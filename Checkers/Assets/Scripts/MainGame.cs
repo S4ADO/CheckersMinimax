@@ -77,40 +77,110 @@ public class MainGame : MonoBehaviour
 		{
 			if (piece.isActive && piece.type == type)
 			{
-				//Check if cell is occupied
-				foreach (Piece pieceOcc in pieces)
-				{
-					if (pieceOcc.cell == selectedCell)
-					{
-						Debug.Log("Piece already exists in that cell");
-						return validMoves;
-					}
-				}
 				//Moving down
 				if (piece.type == Piece.Type.black && !piece.isKing)
 				{
-					if (selectedCell == piece.cell.bottomLeft || selectedCell == piece.cell.bottomRight)
+					bool blFilled = false;
+					bool brFilled = false;
+					//Check if cell is occupied
+					foreach (Piece pieceOcc in pieces)
 					{
-						Move move = new Move(selectedPiece, selectedCell);
+						if (pieceOcc.cell == piece.cell.bottomLeft)
+						{
+							blFilled = true;
+						}
+						if (pieceOcc.cell == piece.cell.bottomRight)
+						{
+							brFilled = true;
+						}
+					}
+					if (!blFilled)
+					{
+						Move move = new Move(piece, piece.cell.bottomLeft);
 						validMoves.Add(move);
+					}
+					if (!brFilled)
+					{
+						Move move2 = new Move(piece, piece.cell.bottomRight);
+						validMoves.Add(move2);
 					}
 				}
 				//Moving up
 				else if (piece.type == Piece.Type.white && !piece.isKing)
 				{
-					if (selectedCell == piece.cell.topLeft || selectedCell == piece.cell.topRight)
+					bool tlFilled = false;
+					bool trFilled = false;
+					//Check if cell is occupied
+					foreach (Piece pieceOcc in pieces)
 					{
-						Move move = new Move(selectedPiece, selectedCell);
+						if (pieceOcc.cell == piece.cell.topLeft)
+						{
+							tlFilled = true;
+						}
+						if (pieceOcc.cell == piece.cell.topRight)
+						{
+							trFilled = true;
+						}
+					}
+					if (!tlFilled)
+					{
+						Move move = new Move(piece, piece.cell.topLeft);
 						validMoves.Add(move);
 					}
+					if (!trFilled)
+					{
+						Move move2 = new Move(piece, piece.cell.topRight);
+						validMoves.Add(move2);
+					}
 				}
+				//Check all 4
 				else if (piece.isKing)
 				{
-					if (selectedCell == piece.cell.topLeft || selectedCell == piece.cell.topRight || 
-						selectedCell == piece.cell.bottomLeft || selectedCell == piece.cell.bottomRight)
+					bool tlFilled = false;
+					bool trFilled = false;
+					bool blFilled = false;
+					bool brFilled = false;
+					foreach (Piece pieceOcc in pieces)
 					{
-						Move move = new Move(selectedPiece, selectedCell);
+						if (pieceOcc.cell == piece.cell.topLeft)
+						{
+							tlFilled = true;
+						}
+						if (pieceOcc.cell == piece.cell.topRight)
+						{
+							trFilled = true;
+						}
+					}
+					if (!tlFilled)
+					{
+						Move move = new Move(piece, piece.cell.topLeft);
 						validMoves.Add(move);
+					}
+					if (!trFilled)
+					{
+						Move move2 = new Move(piece, piece.cell.topRight);
+						validMoves.Add(move2);
+					}
+					foreach (Piece pieceOcc in pieces)
+					{
+						if (pieceOcc.cell == piece.cell.bottomLeft)
+						{
+							blFilled = true;
+						}
+						if (pieceOcc.cell == piece.cell.bottomRight)
+						{
+							brFilled = true;
+						}
+					}
+					if (!blFilled)
+					{
+						Move move3 = new Move(piece, piece.cell.bottomLeft);
+						validMoves.Add(move3);
+					}
+					if (!brFilled)
+					{
+						Move move4 = new Move(piece, piece.cell.bottomRight);
+						validMoves.Add(move4);
 					}
 				}
 			}
@@ -140,6 +210,7 @@ public class MainGame : MonoBehaviour
 				selectedCell = null;
 				selectedPiece = null;
 				turn = turn == Turn.black ? Turn.white : Turn.black;
+				turnText.text = turn == Turn.black ? "Turn: Black" : "Turn: White";
 				return;
 			}
 		}
