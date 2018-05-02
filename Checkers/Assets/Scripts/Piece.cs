@@ -3,9 +3,9 @@
 public class Piece : MonoBehaviour
 {
 	//Declate piece properties
-	public enum type { black, white }
-	public type pieceType;
-	public Cell position;
+	public enum Type { black, white }
+	public Type type;
+	public Cell cell;
 	public bool isKing = false;
 	public Sprite kingSprite;
 	public bool isActive = true;
@@ -15,13 +15,19 @@ public class Piece : MonoBehaviour
 	void Start ()
 	{
 		mainGame = GameObject.Find("Board").GetComponent<MainGame>();
-		transform.position = position.transform.position;
+		transform.position = cell.transform.position;
+	}
+
+	public void movePiece(Cell newCell)
+	{
+		cell = newCell;
+		transform.position = cell.transform.position;
 	}
 	
 	// Update is called once per frame
 	void Update ()
 	{
-		if (!isActive && position != null)
+		if (!isActive && cell != null)
 		{
 			Debug.LogError("Inactive piece with none-null position");
 		}
@@ -37,14 +43,14 @@ public class Piece : MonoBehaviour
 	//For humans playing
 	void OnMouseDown()
 	{
-		if (pieceType == type.black)
+		if (type == Type.black)
 		{
 			if (mainGame.turn == MainGame.Turn.black)
 			{
 				mainGame.selectedPiece = this;
 			}
 		}
-		else if (pieceType == type.white)
+		else if (type == Type.white)
 		{
 			if (mainGame.turn == MainGame.Turn.white)
 			{

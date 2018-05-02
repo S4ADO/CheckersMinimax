@@ -86,6 +86,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Cell.cs" />
     <Compile Include="Assets\Scripts\MainGame.cs" />
+    <Compile Include="Assets\Scripts\Move.cs" />
     <Compile Include="Assets\Scripts\Piece.cs" />
     <Compile Include="Assets\Scripts\StartGameUI.cs" />
   </ItemGroup>

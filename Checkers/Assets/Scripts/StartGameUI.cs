@@ -9,7 +9,7 @@ public class StartGameUI: MonoBehaviour
 
 	void Start()
 	{
-		game.gameObject.SetActive(false);
+		//game.gameObject.SetActive(false);
 	}
 
 	//Human vs Search AI

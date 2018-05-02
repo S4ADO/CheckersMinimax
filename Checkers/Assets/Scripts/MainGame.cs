@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class MainGame : MonoBehaviour
@@ -67,15 +68,82 @@ public class MainGame : MonoBehaviour
 		}
 	}
 
-	void Update()
+	//Get all valid moves for a given piece
+	private List<Move> getAllValidMoves(Piece.Type type)
 	{
-		
+		List<Move> validMoves = new List<Move>();
+		Piece[] pieces = FindObjectsOfType<Piece>();
+		foreach (Piece piece in pieces)
+		{
+			if (piece.isActive && piece.type == type)
+			{
+				//Check if cell is occupied
+				foreach (Piece pieceOcc in pieces)
+				{
+					if (pieceOcc.cell == selectedCell)
+					{
+						Debug.Log("Piece already exists in that cell");
+						return validMoves;
+					}
+				}
+				//Moving down
+				if (piece.type == Piece.Type.black && !piece.isKing)
+				{
+					if (selectedCell == piece.cell.bottomLeft || selectedCell == piece.cell.bottomRight)
+					{
+						Move move = new Move(selectedPiece, selectedCell);
+						validMoves.Add(move);
+					}
+				}
+				//Moving up
+				else if (piece.type == Piece.Type.white && !piece.isKing)
+				{
+					if (selectedCell == piece.cell.topLeft || selectedCell == piece.cell.topRight)
+					{
+						Move move = new Move(selectedPiece, selectedCell);
+						validMoves.Add(move);
+					}
+				}
+				else if (piece.isKing)
+				{
+					if (selectedCell == piece.cell.topLeft || selectedCell == piece.cell.topRight || 
+						selectedCell == piece.cell.bottomLeft || selectedCell == piece.cell.bottomRight)
+					{
+						Move move = new Move(selectedPiece, selectedCell);
+						validMoves.Add(move);
+					}
+				}
+			}
+		}
+		return validMoves;
 	}
 
-	//Check the validity of the move
+	//Make the move
 	public void makeMove()
 	{
-
+		List<Move> validMoves = new List<Move>();
+		if (turn == Turn.black)
+		{
+			validMoves = getAllValidMoves(Piece.Type.black);
+		}
+		else if (turn == Turn.white)
+		{
+			validMoves = getAllValidMoves(Piece.Type.white);
+		}
+		Move currentMove = new Move(selectedPiece, selectedCell);
+		foreach (Move move in validMoves)
+		{
+			if (move.getCell() == selectedCell && move.getPiece() == selectedPiece)
+			{
+				selectedPiece.movePiece(selectedCell);
+				//Make king if cell to move to is end row
+				selectedCell = null;
+				selectedPiece = null;
+				turn = turn == Turn.black ? Turn.white : Turn.black;
+				return;
+			}
+		}
+		Debug.Log("Not in the list of valid moves");
 	}
 
 	void gameOver()
