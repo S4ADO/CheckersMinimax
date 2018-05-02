@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Cell : MonoBehaviour
 {
@@ -10,20 +8,27 @@ public class Cell : MonoBehaviour
 	public SpecialPosition specialPosition;
 	public int row, col;
 	public Cell topLeft, topRight, bottomLeft, bottomRight;
+	private MainGame mainGame;
 
 	//Init
 	void Start ()
 	{
+		mainGame = GameObject.Find("Board").GetComponent<MainGame>();
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{
 		
 	}
 
 	//For humans playing
 	void OnMouseDown()
 	{
-		
+		if (mainGame.selectedPiece != null)
+		{
+			mainGame.selectedCell = this;
+			mainGame.makeMove();
+		}
 	}
 }

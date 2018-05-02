@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
@@ -11,10 +9,12 @@ public class Piece : MonoBehaviour
 	public bool isKing = false;
 	public Sprite kingSprite;
 	public bool isActive = true;
+	private MainGame mainGame;
 
 	//Init
 	void Start ()
 	{
+		mainGame = GameObject.Find("Board").GetComponent<MainGame>();
 		transform.position = position.transform.position;
 	}
 	
@@ -37,6 +37,19 @@ public class Piece : MonoBehaviour
 	//For humans playing
 	void OnMouseDown()
 	{
-		
+		if (pieceType == type.black)
+		{
+			if (mainGame.turn == MainGame.Turn.black)
+			{
+				mainGame.selectedPiece = this;
+			}
+		}
+		else if (pieceType == type.white)
+		{
+			if (mainGame.turn == MainGame.Turn.white)
+			{
+				mainGame.selectedPiece = this;
+			}
+		}
 	}
 }
