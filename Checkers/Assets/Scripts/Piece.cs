@@ -9,14 +9,34 @@ public class Piece : MonoBehaviour
 	public type pieceType;
 	public Cell position;
 	public bool isKing = false;
+	public Sprite kingSprite;
+	public bool isActive = true;
 
-	// Use this for initialization
-	void Start () {
-		
+	//Init
+	void Start ()
+	{
+		transform.position = position.transform.position;
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{
+		if (!isActive && position != null)
+		{
+			Debug.LogError("Inactive piece with none-null position");
+		}
+	}
+
+	//Create king
+	public void makeKing()
+	{
+		isKing = true;
+		GetComponent<SpriteRenderer>().sprite = kingSprite;
+	}
+
+	//For humans playing
+	void OnMouseDown()
+	{
 		
 	}
 }

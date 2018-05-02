@@ -8,15 +8,22 @@ public class Cell : MonoBehaviour
 	public bool isTopOrBottomRow;
 	public enum SpecialPosition {edge, corner}
 	public SpecialPosition specialPosition;
+	public int row, col;
 	public Cell topLeft, topRight, bottomLeft, bottomRight;
 
-	// Use this for initialization
-	void Start () {
-		
+	//Init
+	void Start ()
+	{
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		
+	}
+
+	//For humans playing
+	void OnMouseDown()
+	{
 		
 	}
 }
