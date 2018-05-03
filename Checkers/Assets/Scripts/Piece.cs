@@ -9,13 +9,13 @@ public class Piece : MonoBehaviour
 	public bool isKing = false;
 	public Sprite kingSprite;
 	public bool isActive = true;
-	private MainGame mainGame;
+	public MainGame mainGame;
+	public LayerMask touchInputMask = 2;
 
 	//Init
 	void Start ()
 	{
-		mainGame = GameObject.Find("Board").GetComponent<MainGame>();
-		transform.position = cell.transform.position;
+		transform.position = cell.transform.position + new Vector3(0.001f, 0.001f, 0);
 	}
 
 	public void movePiece(Cell newCell)
@@ -23,11 +23,29 @@ public class Piece : MonoBehaviour
 		cell.piece = null;
 		cell = newCell;
 		cell.piece = this;
-		transform.position = cell.transform.position;
+		transform.position = cell.transform.position + new Vector3(0.001f, 0.001f, 0);
+	}
+
+	void FixedUpdate()
+	{
+		if (Input.GetMouseButtonDown(0))
+		{
+			RaycastHit2D[] hits = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition),
+			Vector2.zero, touchInputMask);
+			foreach (RaycastHit2D hit in hits)
+			{
+				if (hit.transform.gameObject == gameObject)
+				{
+					Debug.Log("hit");
+					OnMouseDown();
+				}
+			}
+		}
 	}
 
 	public void remove()
 	{
+		transform.position = new Vector3(20, 20, 0);
 		cell.piece = null;
 		isActive = false;
 		cell = null;

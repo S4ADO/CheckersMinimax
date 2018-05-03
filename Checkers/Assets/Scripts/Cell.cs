@@ -7,13 +7,12 @@ public class Cell : MonoBehaviour
 	public SpecialPosition specialPosition;
 	public int row, col;
 	public Cell topLeft, topRight, bottomLeft, bottomRight;
-	private MainGame mainGame;
+	public MainGame mainGame;
 	public Piece piece = null;
 
 	//Init
 	void Start()
 	{
-		mainGame = GameObject.Find("Board").GetComponent<MainGame>();
 		Piece[] pieces = FindObjectsOfType<Piece>();
 		foreach (Piece piece in pieces)
 		{
