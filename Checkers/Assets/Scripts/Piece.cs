@@ -16,6 +16,7 @@ public class Piece : MonoBehaviour
 	{
 		mainGame = GameObject.Find("Board").GetComponent<MainGame>();
 		transform.position = cell.transform.position;
+		transform.position = new Vector3(transform.position.x, transform.position.y+0.0001f, 0);
 	}
 
 	public void movePiece(Cell newCell)
@@ -24,6 +25,14 @@ public class Piece : MonoBehaviour
 		cell = newCell;
 		cell.piece = this;
 		transform.position = cell.transform.position;
+	}
+
+	public void remove()
+	{
+		cell.piece = null;
+		isActive = false;
+		cell = null;
+		gameObject.SetActive(false);
 	}
 	
 	// Update is called once per frame
@@ -45,18 +54,21 @@ public class Piece : MonoBehaviour
 	//For humans playing
 	void OnMouseDown()
 	{
-		if (type == Type.black)
+		if (!MainGame.mustEat)
 		{
-			if (mainGame.turn == MainGame.Turn.black)
+			if (type == Type.black)
 			{
-				mainGame.selectedPiece = this;
+				if (mainGame.turn == MainGame.Turn.black)
+				{
+					mainGame.selectedPiece = this;
+				}
 			}
-		}
-		else if (type == Type.white)
-		{
-			if (mainGame.turn == MainGame.Turn.white)
+			else if (type == Type.white)
 			{
-				mainGame.selectedPiece = this;
+				if (mainGame.turn == MainGame.Turn.white)
+				{
+					mainGame.selectedPiece = this;
+				}
 			}
 		}
 	}

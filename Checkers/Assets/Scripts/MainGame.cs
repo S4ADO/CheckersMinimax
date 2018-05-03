@@ -16,6 +16,8 @@ public class MainGame : MonoBehaviour
 	//Selected piece and cell
 	public Cell selectedCell;
 	public Piece selectedPiece;
+	//On second and corresponding moves
+	public static bool mustEat = false;
 
 	//Initialise the game state
 	public void init(GameType type)
@@ -91,7 +93,7 @@ public class MainGame : MonoBehaviour
 								//Occupied so check if resultant cell is empty so can eat
 								if (piece.cell.bottomLeft.bottomLeft.piece == null)
 								{
-									Move move = new Move(piece, piece.cell.bottomLeft.bottomLeft, true);
+									Move move = new Move(piece, piece.cell.bottomLeft.bottomLeft, piece.cell.bottomLeft.piece);
 									validMoves.Add(move);
 								}
 							}
@@ -112,7 +114,7 @@ public class MainGame : MonoBehaviour
 							{
 								if (piece.cell.bottomRight.bottomRight.piece == null)
 								{
-									Move move = new Move(piece, piece.cell.bottomRight.bottomRight, true);
+									Move move = new Move(piece, piece.cell.bottomRight.bottomRight, piece.cell.bottomRight.piece);
 									validMoves.Add(move);
 								}
 							}
@@ -136,7 +138,7 @@ public class MainGame : MonoBehaviour
 								//Occupied so check if resultant cell is empty so can eat
 								if (piece.cell.topLeft.topLeft.piece == null)
 								{
-									Move move = new Move(piece, piece.cell.topLeft.topLeft, true);
+									Move move = new Move(piece, piece.cell.topLeft.topLeft, piece.cell.topLeft.piece);
 									validMoves.Add(move);
 								}
 							}
@@ -157,7 +159,7 @@ public class MainGame : MonoBehaviour
 							{
 								if (piece.cell.topRight.topRight.piece == null)
 								{
-									Move move = new Move(piece, piece.cell.topRight.topRight, true);
+									Move move = new Move(piece, piece.cell.topRight.topRight, piece.cell.topRight.piece);
 									validMoves.Add(move);
 								}
 							}
@@ -172,51 +174,88 @@ public class MainGame : MonoBehaviour
 				//King movement
 				else if (piece.isKing)
 				{
-					bool tlFilled = false;
-					bool trFilled = false;
-					bool blFilled = false;
-					bool brFilled = false;
-					foreach (Piece pieceOcc in pieces)
+					if (piece.cell.topLeft != null)
 					{
-						if (pieceOcc.cell == piece.cell.topLeft)
+						if (!(piece.cell.topLeft.piece == null))
 						{
-							tlFilled = true;
+							if (piece.cell.topLeft.topLeft != null && piece.cell.topLeft.piece.type != piece.type)
+							{
+								//Occupied so check if resultant cell is empty so can eat
+								if (piece.cell.topLeft.topLeft.piece == null)
+								{
+									Move move = new Move(piece, piece.cell.topLeft.topLeft, piece.cell.topLeft.piece);
+									validMoves.Add(move);
+								}
+							}
 						}
-						if (pieceOcc.cell == piece.cell.topRight)
+						//Not occupied so can move
+						else
 						{
-							trFilled = true;
-						}
-					}
-					if (!tlFilled)
-					{
-						Move move = new Move(piece, piece.cell.topLeft);
-						validMoves.Add(move);
-					}
-					if (!trFilled)
-					{
-						Move move2 = new Move(piece, piece.cell.topRight);
-						validMoves.Add(move2);
-					}
-					foreach (Piece pieceOcc in pieces)
-					{
-						if (pieceOcc.cell == piece.cell.bottomLeft)
-						{
-							blFilled = true;
-						}
-						if (pieceOcc.cell == piece.cell.bottomRight)
-						{
-							brFilled = true;
+							Move move = new Move(piece, piece.cell.topLeft);
+							validMoves.Add(move);
 						}
 					}
-					if (!blFilled)
+					//Check if cell is occupied TR
+					if (piece.cell.topRight != null)
 					{
-						Move move3 = new Move(piece, piece.cell.bottomLeft);
-						validMoves.Add(move3);
+						if (!(piece.cell.topRight.piece == null))
+						{
+							if (piece.cell.topRight.topRight != null && piece.cell.topRight.piece.type != piece.type)
+							{
+								if (piece.cell.topRight.topRight.piece == null)
+								{
+									Move move = new Move(piece, piece.cell.topRight.topRight, piece.cell.topRight.piece);
+									validMoves.Add(move);
+								}
+							}
+						}
+						else
+						{
+							Move move2 = new Move(piece, piece.cell.topRight);
+							validMoves.Add(move2);
+						}
 					}
-					if (!brFilled)
+					//Check if cell is occupied BL
+					if (piece.cell.bottomLeft != null)
 					{
-						Move move4 = new Move(piece, piece.cell.bottomRight);
-						validMoves.Add(move4);
+						if (!(piece.cell.bottomLeft.piece == null))
+						{
+							if (piece.cell.bottomLeft.bottomLeft != null && piece.cell.bottomLeft.piece.type != piece.type)
+							{
+								//Occupied so check if resultant cell is empty so can eat
+								if (piece.cell.bottomLeft.bottomLeft.piece == null)
+								{
+									Move move = new Move(piece, piece.cell.bottomLeft.bottomLeft, piece.cell.bottomLeft.piece);
+									validMoves.Add(move);
+								}
+							}
+						}
+						//Not occupied so can move
+						else
+						{
+							Move move = new Move(piece, piece.cell.bottomLeft);
+							validMoves.Add(move);
+						}
+					}
+					//Check if cell is occupied BR
+					if (piece.cell.bottomRight != null)
+					{
+						if (!(piece.cell.bottomRight.piece == null))
+						{
+							if (piece.cell.bottomRight.bottomRight != null && piece.cell.bottomRight.piece.type != piece.type)
+							{
+								if (piece.cell.bottomRight.bottomRight.piece == null)
+								{
+									Move move = new Move(piece, piece.cell.bottomRight.bottomRight, piece.cell.bottomRight.piece);
+									validMoves.Add(move);
+								}
+							}
+						}
+						else
+						{
+							Move move2 = new Move(piece, piece.cell.bottomRight);
+							validMoves.Add(move2);
+						}
 					}
 				}
 			}
@@ -227,6 +266,9 @@ public class MainGame : MonoBehaviour
 	//Make the move
 	public void makeMove()
 	{
+		bool ate = false;
+		bool moved = false;
+
 		List<Move> validMoves = new List<Move>();
 		if (turn == Turn.black)
 		{
@@ -237,23 +279,107 @@ public class MainGame : MonoBehaviour
 			validMoves = getAllValidMoves(Piece.Type.white);
 		}
 		Move currentMove = new Move(selectedPiece, selectedCell);
+		Piece curPiece = selectedPiece;
 		foreach (Move move in validMoves)
 		{
-			if (move.getCell() == selectedCell && move.getPiece() == selectedPiece)
+			if (mustEat)
+			{
+				if (move.getCell() == selectedCell && move.getPiece() == selectedPiece && move.getJumped() != null)
+				{
+					selectedPiece.movePiece(selectedCell);
+					moved = true;
+					move.getJumped().remove();
+					ate = true;
+					mustEat = false;
+				}
+			}
+			else if (move.getCell() == selectedCell && move.getPiece() == selectedPiece)
 			{
 				selectedPiece.movePiece(selectedCell);
-				//Make king if cell to move to is end row
-				selectedCell = null;
-				selectedPiece = null;
-				turn = turn == Turn.black ? Turn.white : Turn.black;
-				turnText.text = turn == Turn.black ? "Turn: Black" : "Turn: White";
-				return;
+				moved = true;
+				//Remove jumped over piece
+				if (move.getJumped() != null)
+				{
+					move.getJumped().remove();
+					ate = true;
+				}
 			}
 		}
-		Debug.Log("Not in the list of valid moves");
+
+		if (ate)
+		{
+			if (turn == Turn.black)
+			{
+				validMoves = getAllValidMoves(Piece.Type.black);
+			}
+			else if (turn == Turn.white)
+			{
+				validMoves = getAllValidMoves(Piece.Type.white);
+			}
+			Move newMove = new Move(curPiece, null);
+			foreach (Move move in validMoves)
+			{
+				if (newMove.getPiece() == move.getPiece() && move.getJumped() != null)
+				{
+					Debug.Log("CELL: " + move.getCell().row + "," + move.getCell().col + "  Piece: " + curPiece.cell.row + "," + curPiece.cell.col);
+					selectedCell = null;
+					mustEat = true;
+					return;
+				}
+			}
+		}
+
+		if (moved)
+		{
+			selectedCell = null;
+			turn = turn == Turn.black ? Turn.white : Turn.black;
+			turnText.text = turn == Turn.black ? "Turn: Black" : "Turn: White";
+			mustEat = false;
+			checkWin();
+		}
+		else
+		{
+			mustEat = false;
+			Debug.Log("Not in the list of valid moves");
+			return;
+		}
+		//TODO: Make king if cell to move to is end row
+	}
+
+	//Check if pieces are left
+	void checkWin()
+	{
+		Piece[] pieces = FindObjectsOfType<Piece>();
+		bool blackExists = false;
+		bool whiteExists = false;
+		//Check black 
+		foreach (Piece piece in pieces)
+		{
+			if (piece.isActive && piece.type == Piece.Type.black)
+			{
+				blackExists = true;
+			}
+		}
+		//Check white
+		foreach (Piece piece in pieces)
+		{
+			if (piece.isActive && piece.type == Piece.Type.white)
+			{
+				whiteExists = true;
+			}
+		}
+		if (!whiteExists)
+		{
+			Debug.Log("Black wins");
+		}
+		if (!blackExists)
+		{
+			Debug.Log("White wins");
+		}
 	}
 
 	void gameOver()
 	{
+
 	}
 }
