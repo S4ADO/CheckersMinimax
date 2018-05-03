@@ -20,7 +20,9 @@ public class Piece : MonoBehaviour
 
 	public void movePiece(Cell newCell)
 	{
+		cell.piece = null;
 		cell = newCell;
+		cell.piece = this;
 		transform.position = cell.transform.position;
 	}
 	

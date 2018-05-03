@@ -2,12 +2,14 @@
 {
 	private Piece piece;
 	private Cell cell;
+	private bool Jump;
 
 	//Constructor
-	public Move(Piece p, Cell c)
+	public Move(Piece p, Cell c, bool jump = false)
 	{
 		piece = p;
 		cell = c;
+		jump = true;
 	}
 
 	//Getters
@@ -19,5 +21,10 @@
 	public Cell getCell()
 	{
 		return cell;
+	}
+
+	public bool getJump()
+	{
+		return Jump;
 	}
 }

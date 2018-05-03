@@ -9,11 +9,20 @@ public class Cell : MonoBehaviour
 	public int row, col;
 	public Cell topLeft, topRight, bottomLeft, bottomRight;
 	private MainGame mainGame;
+	public Piece piece = null;
 
 	//Init
-	void Start ()
+	void Start()
 	{
 		mainGame = GameObject.Find("Board").GetComponent<MainGame>();
+		Piece[] pieces = FindObjectsOfType<Piece>();
+		foreach (Piece piece in pieces)
+		{
+			if (piece.cell == this)
+			{
+				this.piece = piece;
+			}
+		}
 	}
 	
 	// Update is called once per frame
