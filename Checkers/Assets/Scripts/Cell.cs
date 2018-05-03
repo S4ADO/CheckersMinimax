@@ -17,9 +17,12 @@ public class Cell : MonoBehaviour
 		Piece[] pieces = FindObjectsOfType<Piece>();
 		foreach (Piece piece in pieces)
 		{
-			if (piece.cell == this)
+			if (!piece.tag.Equals("clone"))
 			{
-				this.piece = piece;
+				if (piece.cell == this)
+				{
+					this.piece = piece;
+				}
 			}
 		}
 	}
@@ -33,7 +36,7 @@ public class Cell : MonoBehaviour
 	//For humans playing
 	void OnMouseDown()
 	{
-		if (mainGame.selectedPiece != null)
+		if (mainGame.selectedPiece != null && piece == null)
 		{
 			mainGame.selectedCell = this;
 			mainGame.makeMove();

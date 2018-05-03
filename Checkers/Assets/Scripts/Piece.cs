@@ -16,7 +16,6 @@ public class Piece : MonoBehaviour
 	{
 		mainGame = GameObject.Find("Board").GetComponent<MainGame>();
 		transform.position = cell.transform.position;
-		transform.position = new Vector3(transform.position.x, transform.position.y+0.0001f, 0);
 	}
 
 	public void movePiece(Cell newCell)
