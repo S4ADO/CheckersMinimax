@@ -3,7 +3,6 @@
 public class Cell : MonoBehaviour
 {
 	//Declare cell properties
-	public bool isTopOrBottomRow;
 	public enum SpecialPosition {edge, corner}
 	public SpecialPosition specialPosition;
 	public int row, col;

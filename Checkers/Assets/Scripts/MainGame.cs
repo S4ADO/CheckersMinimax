@@ -297,6 +297,12 @@ public class MainGame : MonoBehaviour
 			if (move.getCell() == selectedCell && move.getPiece() == selectedPiece)
 			{
 				selectedPiece.movePiece(selectedCell);
+				//Check if king has been made
+				if ((selectedCell.col == 8 && selectedPiece.type == Piece.Type.white) ||
+					(selectedCell.col == 1 && selectedPiece.type == Piece.Type.black))
+				{
+					selectedPiece.makeKing();
+				}
 				moved = true;
 				//Remove jumped over piece
 				if (move.getJumped() != null)
