@@ -54,21 +54,18 @@ public class Piece : MonoBehaviour
 	//For humans playing
 	void OnMouseDown()
 	{
-		if (!MainGame.mustEat)
+		if (type == Type.black)
 		{
-			if (type == Type.black)
+			if (mainGame.turn == MainGame.Turn.black)
 			{
-				if (mainGame.turn == MainGame.Turn.black)
-				{
-					mainGame.selectedPiece = this;
-				}
+				mainGame.selectedPiece = this;
 			}
-			else if (type == Type.white)
+		}
+		else if (type == Type.white)
+		{
+			if (mainGame.turn == MainGame.Turn.white)
 			{
-				if (mainGame.turn == MainGame.Turn.white)
-				{
-					mainGame.selectedPiece = this;
-				}
+				mainGame.selectedPiece = this;
 			}
 		}
 	}

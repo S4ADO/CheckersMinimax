@@ -7,17 +7,15 @@ public class MainGame : MonoBehaviour
 	//UI to be used when game is over
 	public StartGameUI UI;
 	//Type of game (human vs AI / AI vs AI)
-	public enum GameType {hvs, hvt, tvs}
+	public enum GameType { hvs, hvt, tvs }
 	public GameType gameType;
 	//Player turn
-	public enum Turn {black, white}
+	public enum Turn { black, white }
 	public Turn turn;
 	public Text turnText;
 	//Selected piece and cell
 	public Cell selectedCell;
 	public Piece selectedPiece;
-	//On second and corresponding moves
-	public static bool mustEat = false;
 
 	//Initialise the game state
 	public void init(GameType type)
@@ -75,6 +73,7 @@ public class MainGame : MonoBehaviour
 	{
 		List<Move> validMoves = new List<Move>();
 		Piece[] pieces = FindObjectsOfType<Piece>();
+		bool canEat = false;
 		foreach (Piece piece in pieces)
 		{
 			//Right colour
@@ -95,6 +94,7 @@ public class MainGame : MonoBehaviour
 								{
 									Move move = new Move(piece, piece.cell.bottomLeft.bottomLeft, piece.cell.bottomLeft.piece);
 									validMoves.Add(move);
+									canEat = true;
 								}
 							}
 						}
@@ -116,6 +116,7 @@ public class MainGame : MonoBehaviour
 								{
 									Move move = new Move(piece, piece.cell.bottomRight.bottomRight, piece.cell.bottomRight.piece);
 									validMoves.Add(move);
+									canEat = true;
 								}
 							}
 						}
@@ -140,6 +141,7 @@ public class MainGame : MonoBehaviour
 								{
 									Move move = new Move(piece, piece.cell.topLeft.topLeft, piece.cell.topLeft.piece);
 									validMoves.Add(move);
+									canEat = true;
 								}
 							}
 						}
@@ -161,6 +163,7 @@ public class MainGame : MonoBehaviour
 								{
 									Move move = new Move(piece, piece.cell.topRight.topRight, piece.cell.topRight.piece);
 									validMoves.Add(move);
+									canEat = true;
 								}
 							}
 						}
@@ -185,6 +188,7 @@ public class MainGame : MonoBehaviour
 								{
 									Move move = new Move(piece, piece.cell.topLeft.topLeft, piece.cell.topLeft.piece);
 									validMoves.Add(move);
+									canEat = true;
 								}
 							}
 						}
@@ -206,6 +210,7 @@ public class MainGame : MonoBehaviour
 								{
 									Move move = new Move(piece, piece.cell.topRight.topRight, piece.cell.topRight.piece);
 									validMoves.Add(move);
+									canEat = true;
 								}
 							}
 						}
@@ -227,6 +232,7 @@ public class MainGame : MonoBehaviour
 								{
 									Move move = new Move(piece, piece.cell.bottomLeft.bottomLeft, piece.cell.bottomLeft.piece);
 									validMoves.Add(move);
+									canEat = true;
 								}
 							}
 						}
@@ -248,6 +254,7 @@ public class MainGame : MonoBehaviour
 								{
 									Move move = new Move(piece, piece.cell.bottomRight.bottomRight, piece.cell.bottomRight.piece);
 									validMoves.Add(move);
+									canEat = true;
 								}
 							}
 						}
@@ -259,6 +266,11 @@ public class MainGame : MonoBehaviour
 					}
 				}
 			}
+		}
+		//Remove all other moves if can eat
+		if (canEat)
+		{
+			validMoves.RemoveAll(m => m.getJumped() == null);
 		}
 		return validMoves;
 	}
@@ -282,18 +294,7 @@ public class MainGame : MonoBehaviour
 		Piece curPiece = selectedPiece;
 		foreach (Move move in validMoves)
 		{
-			if (mustEat)
-			{
-				if (move.getCell() == selectedCell && move.getPiece() == selectedPiece && move.getJumped() != null)
-				{
-					selectedPiece.movePiece(selectedCell);
-					moved = true;
-					move.getJumped().remove();
-					ate = true;
-					mustEat = false;
-				}
-			}
-			else if (move.getCell() == selectedCell && move.getPiece() == selectedPiece)
+			if (move.getCell() == selectedCell && move.getPiece() == selectedPiece)
 			{
 				selectedPiece.movePiece(selectedCell);
 				moved = true;
@@ -310,10 +311,12 @@ public class MainGame : MonoBehaviour
 		{
 			if (turn == Turn.black)
 			{
+				Debug.Log("hit0");
 				validMoves = getAllValidMoves(Piece.Type.black);
 			}
 			else if (turn == Turn.white)
 			{
+				Debug.Log("hit1");
 				validMoves = getAllValidMoves(Piece.Type.white);
 			}
 			Move newMove = new Move(curPiece, null);
@@ -321,9 +324,8 @@ public class MainGame : MonoBehaviour
 			{
 				if (newMove.getPiece() == move.getPiece() && move.getJumped() != null)
 				{
-					Debug.Log("CELL: " + move.getCell().row + "," + move.getCell().col + "  Piece: " + curPiece.cell.row + "," + curPiece.cell.col);
+					Debug.Log("hit3 " + move.getJumped().cell.row + "," + move.getJumped().cell.col);
 					selectedCell = null;
-					mustEat = true;
 					return;
 				}
 			}
@@ -334,12 +336,10 @@ public class MainGame : MonoBehaviour
 			selectedCell = null;
 			turn = turn == Turn.black ? Turn.white : Turn.black;
 			turnText.text = turn == Turn.black ? "Turn: Black" : "Turn: White";
-			mustEat = false;
 			checkWin();
 		}
 		else
 		{
-			mustEat = false;
 			Debug.Log("Not in the list of valid moves");
 			return;
 		}
