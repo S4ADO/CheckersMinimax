@@ -13,7 +13,7 @@ public class Piece : MonoBehaviour
 	public LayerMask touchInputMask = 2;
 
 	//Init
-	void Start ()
+	void Start()
 	{
 		transform.position = cell.transform.position + new Vector3(0.001f, 0.001f, 0);
 	}
@@ -36,7 +36,6 @@ public class Piece : MonoBehaviour
 			{
 				if (hit.transform.gameObject == gameObject)
 				{
-					Debug.Log("hit");
 					OnMouseDown();
 				}
 			}
@@ -51,9 +50,9 @@ public class Piece : MonoBehaviour
 		cell = null;
 		gameObject.SetActive(false);
 	}
-	
+
 	// Update is called once per frame
-	void Update ()
+	void Update()
 	{
 		if (!isActive && cell != null)
 		{
@@ -85,5 +84,6 @@ public class Piece : MonoBehaviour
 				mainGame.selectedPiece = this;
 			}
 		}
+
 	}
 }
