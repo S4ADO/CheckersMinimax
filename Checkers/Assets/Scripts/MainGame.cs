@@ -63,9 +63,21 @@ public class MainGame : MonoBehaviour
 	{
 		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 		stopwatch.Start();
-		MinimaxSearch.depth = 2;
-		MinimaxSearch.board = mainBoard;
-		Move m = MinimaxSearch.minimaxStart();
+		Move m = null;
+		if ((mainBoard.gameType == Board.GameType.tvs && mainBoard.turn == Board.Turn.black)
+			|| (mainBoard.gameType == Board.GameType.hvs && mainBoard.turn == Board.Turn.black))
+		{
+			MinimaxSearch.depth = 3;
+			MinimaxSearch.board = mainBoard;
+			m = MinimaxSearch.minimaxStart();
+		}
+		else if ((mainBoard.gameType == Board.GameType.tvs && mainBoard.turn == Board.Turn.white)
+			|| (mainBoard.gameType == Board.GameType.hvt && mainBoard.turn == Board.Turn.white))
+		{
+			MinimaxTactical.board = mainBoard;
+			m = MinimaxTactical.minimaxStart();
+		}
+
 		stopwatch.Stop();
 		Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
 		stopwatch.Reset();

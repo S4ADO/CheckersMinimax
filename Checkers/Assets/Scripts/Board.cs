@@ -12,6 +12,7 @@ public class Board : MonoBehaviour
 	public enum GameType { hvs, hvt, tvs }
 	public GameType gameType;
 	public bool gameOver = false;
+	public bool firstMove = true;
 	//Player turn
 	public enum Turn { black, white }
 	public Turn turn;
@@ -342,7 +343,8 @@ public class Board : MonoBehaviour
 		bool ate = false;
 		bool moved = false;
 
-		List<Move> validMoves = new List<Move>();
+		List<Move> validMoves = null;
+		validMoves = new List<Move>();
 		if (turn == Turn.black)
 		{
 			validMoves = getAllValidMoves(Piece.Type.black);
@@ -367,6 +369,7 @@ public class Board : MonoBehaviour
 					selectedPiece.makeKing();
 				}
 				moved = true;
+				firstMove = false;
 				//Remove jumped over piece
 				if (move.getJumped() != null)
 				{

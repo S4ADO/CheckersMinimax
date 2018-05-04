@@ -3,7 +3,7 @@
 public class Cell : MonoBehaviour
 {
 	//Declare cell properties
-	public enum SpecialPosition { edge, corner }
+	public enum SpecialPosition {none, edge}
 	public SpecialPosition specialPosition;
 	public int row, col;
 	public Cell topLeft, topRight, bottomLeft, bottomRight;

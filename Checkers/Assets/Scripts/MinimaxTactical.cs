@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MinimaxTactical : MonoBehaviour
 {
-	public static int depth, loopCount = 0;
+	public static int depth = 4, loopCount = 0;
 	public static Board board;
 
 	//Simple search minimax with AB pruning
@@ -17,9 +17,15 @@ public class MinimaxTactical : MonoBehaviour
 		double alpha = double.NegativeInfinity;
 		double beta = double.PositiveInfinity;
 
-		List<Move> possibleMoves = board.getAllValidMoves(Piece.Type.black);
+		List<Move> possibleMoves = board.getAllValidMoves(Piece.Type.white);
 		List<double> heuristics = new List<double>();
 
+		if (board.firstMove)
+		{
+			Move m = new Move(GameObject.Find("white (11)").GetComponent<Piece>(),
+				GameObject.Find("cell (27)").GetComponent<Cell>());
+			return m;
+		}
 		Board clone = null;
 		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 		stopwatch.Start();
@@ -68,7 +74,7 @@ public class MinimaxTactical : MonoBehaviour
 	{
 		if (depth == 0)
 		{
-			int h = getTacticalHeuristic(board, Piece.Type.black);
+			int h = getTacticalHeuristic(board, Piece.Type.white);
 			if (h == 0)
 			{
 				Destroy(board.gameObject);
@@ -79,11 +85,11 @@ public class MinimaxTactical : MonoBehaviour
 
 		if (maxPlayer == true)
 		{
-			type = Piece.Type.black;
+			type = Piece.Type.white;
 		}
 		else
 		{
-			type = Piece.Type.white;
+			type = Piece.Type.black;
 		}
 
 		List<Move> possibleMoves = board.getAllValidMoves(type);
@@ -141,8 +147,9 @@ public class MinimaxTactical : MonoBehaviour
 	//Return number of pieces left for a player
 	private static int getTacticalHeuristic(Board board, Piece.Type type)
 	{
-		int numPieceForPlayer = 0;
-		int numPieceForOpp = 0;
+		//Pawn = 5 + row number king = 10
+		int evalFunc = 0;
+		int evalFuncOpp = 0;
 		List<Piece> boardPieces = new List<Piece>();
 		foreach (Piece p in FindObjectsOfType<Piece>())
 		{
@@ -153,24 +160,48 @@ public class MinimaxTactical : MonoBehaviour
 		}
 		foreach (Piece p in boardPieces)
 		{
+			//TactialAI
 			if (p.type == type && p.isActive)
 			{
-				numPieceForPlayer++;
-				if (p.isKing)
+				evalFunc += p.isKing ? 10 : 5;
+				//The closer to being king the higher the evaluation 
+				if (!p.isKing)
 				{
-					numPieceForPlayer++;
+					switch (p.cell.col)
+					{
+						case 6:
+							evalFunc += 1;
+							break;
+						case 7:
+							evalFunc += 2;
+							break;
+					}
+					//Pieces on the edge have an advantage of not being able to be eaten
+					evalFunc += p.cell.specialPosition == Cell.SpecialPosition.edge ? 1 : 0;
 				}
 			}
+			//Opponent
 			else if (p.type != type && p.isActive)
 			{
-				numPieceForOpp++;
-				if (p.isKing)
+				evalFuncOpp += p.isKing ? 10 : 5;
+				//The closer to being king the higher the evaluation (black piece moves downwards)
+				if (!p.isKing)
 				{
-					numPieceForOpp++;
+					switch (p.cell.col)
+					{
+						case 3:
+							evalFuncOpp += 1;
+							break;
+						case 2:
+							evalFuncOpp += 2;
+							break;
+					}
+					//Pieces on the edge have an advantage of not being able to be eaten
+					evalFuncOpp += p.cell.specialPosition == Cell.SpecialPosition.edge ? 1 : 0;
 				}
 			}
 		}
-		board.thisHeurusic = numPieceForPlayer - numPieceForOpp;
-		return numPieceForPlayer - numPieceForOpp;
+		board.thisHeurusic = evalFunc - evalFuncOpp;
+		return evalFunc - evalFuncOpp;
 	}
 }
