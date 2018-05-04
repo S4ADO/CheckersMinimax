@@ -50,3 +50,4 @@ Library/
 Temp/
 *.meta
 *.asset
+Builds/

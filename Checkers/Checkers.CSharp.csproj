@@ -84,12 +84,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Board.cs" />
     <Compile Include="Assets\Scripts\Cell.cs" />
     <Compile Include="Assets\Scripts\MainGame.cs" />
+    <Compile Include="Assets\Scripts\MinimaxSearch.cs" />
+    <Compile Include="Assets\Scripts\MinimaxTactical.cs" />
     <Compile Include="Assets\Scripts\Move.cs" />
     <Compile Include="Assets\Scripts\Piece.cs" />
     <Compile Include="Assets\Scripts\StartGameUI.cs" />
-    <Compile Include="Assets\Scripts\Tree.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

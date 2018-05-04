@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class MainGame : MonoBehaviour
 {
-	public int thisHeurusic = 0;
-
 	public string movesMade = "";
 	//UI to be used when game is over
 	public StartGameUI UI;
@@ -21,14 +20,13 @@ public class MainGame : MonoBehaviour
 	public Cell selectedCell;
 	public Piece selectedPiece;
 	//The clone game to run simulations on
-	public MainGame clone;
-	public MainGame theMainGame;
+	private MainGame clone;
 	private bool isClone = false;
+	private bool AImoving = false;
 
 	//Initialise the game state
 	public void init(GameType type)
 	{
-		theMainGame = GameObject.Find("Board").GetComponent<MainGame>();
 		gameType = type;
 		//Assign random first turn
 		//turn = (int)Time.time % 2 == 0 ? Turn.black : Turn.white;
@@ -79,14 +77,14 @@ public class MainGame : MonoBehaviour
 	}
 
 	//Get all valid moves for a given piece
-	public List<Move> getAllValidMoves(Piece.Type type)
+	private List<Move> getAllValidMoves(Piece.Type type)
 	{
 		List<Move> validMoves = new List<Move>();
 		Piece[] pieces = FindObjectsOfType<Piece>();
 		List<Piece> boardPieces = new List<Piece>();
 		foreach (Piece p in pieces)
 		{
-			if (p.cell.mainGame == GetComponent<MainGame>())
+			if (p.transform.parent.parent.GetComponent<MainGame>() == GetComponent<MainGame>())
 			{
 				boardPieces.Add(p);
 			}
@@ -309,10 +307,10 @@ public class MainGame : MonoBehaviour
 		string move = IF.text;
 		string[] moveArr = move.Split(',');
 		Piece[] pieces = FindObjectsOfType<Piece>();
-		Piece piece = null;
+		Piece piece=null;
 		foreach (Piece p in pieces)
 		{
-			if (p.cell.mainGame == theMainGame)
+			if (p.transform.parent.parent.GetComponent<MainGame>() == GameObject.Find("Board").GetComponent<MainGame>())
 			{
 				if (p.cell.row == int.Parse(moveArr[0]) && p.cell.col == int.Parse(moveArr[1]))
 				{
@@ -322,10 +320,10 @@ public class MainGame : MonoBehaviour
 			}
 		}
 		Cell[] Cells = FindObjectsOfType<Cell>();
-		Cell cell = null;
+		Cell cell=null;
 		foreach (Cell c in Cells)
 		{
-			if (c.mainGame == theMainGame)
+			if (c.transform.parent.parent.GetComponent<MainGame>() == GameObject.Find("Board").GetComponent<MainGame>())
 			{
 				if (c.row == int.Parse(moveArr[2]) && c.col == int.Parse(moveArr[3]))
 				{
@@ -337,15 +335,15 @@ public class MainGame : MonoBehaviour
 		makeMove(piece, cell);
 	}
 
-	public Piece findEquivilantPiece(Piece piece)
+	Piece findEquivilantPiece(Piece piece)
 	{
 		Piece toRet = null;
 		Piece[] pieces = FindObjectsOfType<Piece>();
 		foreach (Piece p in pieces)
 		{
-			if (p.cell.mainGame == GetComponent<MainGame>())
+			if (p.transform.parent.parent.GetComponent<MainGame>() == GetComponent<MainGame>())
 			{
-				if (p.cell.row == piece.cell.row &&
+				if (p.cell.row == piece.cell.row && 
 					p.cell.col == piece.cell.col &&
 					p.type == piece.type && p.isKing == piece.isKing)
 				{
@@ -357,13 +355,13 @@ public class MainGame : MonoBehaviour
 		return toRet;
 	}
 
-	public Cell findEquivilantCell(Cell cell)
+	Cell findEquivilantCell(Cell cell)
 	{
 		Cell toRet = null;
 		Cell[] cells = FindObjectsOfType<Cell>();
 		foreach (Cell c in cells)
 		{
-			if (c.mainGame == GetComponent<MainGame>())
+			if (c.transform.parent.parent.GetComponent<MainGame>() == GetComponent<MainGame>())
 			{
 				if (c.row == cell.row && c.col == cell.col)
 				{
@@ -401,11 +399,11 @@ public class MainGame : MonoBehaviour
 		Piece curPiece = selectedPiece;
 		foreach (Move move in validMoves)
 		{
-			if (move.getCell() == (selectedCell) && move.getPiece() == (selectedPiece))
+			if (move.getCell()==(selectedCell) && move.getPiece()==(selectedPiece))
 			{
-				movesMade = movesMade + selectedPiece.name + selectedCell.name + ";";
+				Debug.Log("Hit");
+				movesMade = movesMade + "\n" + selectedCell.name + "," + selectedPiece.name + "\n"; 
 				selectedPiece.movePiece(selectedCell);
-
 				//Check if king has been made
 				if ((selectedCell.col == 8 && selectedPiece.type == Piece.Type.white) ||
 					(selectedCell.col == 1 && selectedPiece.type == Piece.Type.black))
@@ -439,6 +437,7 @@ public class MainGame : MonoBehaviour
 				if (newMove.getPiece() == move.getPiece() && move.getJumped() != null)
 				{
 					selectedCell = null;
+					AImoving = false;
 					return true;
 				}
 			}
@@ -450,6 +449,7 @@ public class MainGame : MonoBehaviour
 			turn = turn == Turn.black ? Turn.white : Turn.black;
 			turnText.text = turn == Turn.black ? "Turn: Black" : "Turn: White";
 			checkWin();
+			AImoving = false;
 			return true;
 		}
 		else
@@ -458,46 +458,189 @@ public class MainGame : MonoBehaviour
 		}
 	}
 
-	void startAI()
+	//Simple search minimax with AB pruning
+	private Move minimaxStart(MainGame board, int depth)
 	{
-		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-		stopwatch.Start();
-		MinimaxSearch.depth = 2;
-		MinimaxSearch.board = this;
-		Move m = MinimaxSearch.minimaxStart();
-		stopwatch.Stop();
-		Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
-		stopwatch.Reset();
-		makeMove(m.getPiece(), m.getCell());
-		MainGame[] mg = FindObjectsOfType<MainGame>();
-		foreach (MainGame mgg in mg)
+		bool maxPlayer = true;
+		double alpha = double.NegativeInfinity;
+		double beta = double.PositiveInfinity;
+
+		List<Move> possibleMoves = getAllValidMoves(Piece.Type.black);
+		List<double> heuristics = new List<double>();
+
+		MainGame clone = null;
+		for (int i = 0; i < possibleMoves.Count; i++)
 		{
-			if (mgg.thisHeurusic == 0 && mgg != theMainGame)
+			clone = board.setCloneBoard();
+			bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+				clone.findEquivilantCell(possibleMoves[i].getCell()));
+			Debug.Log(moved + " 1");
+			heuristics.Add(minimax(clone, depth - 1, !maxPlayer, alpha, beta));
+			//Destroy(clone.gameObject);
+		}
+
+		double maxHeuristics = double.NegativeInfinity;
+
+		for (int i = heuristics.Count - 1; i >= 0; i--)
+		{
+			if (heuristics[i] >= maxHeuristics)
 			{
-				Destroy(mgg.gameObject);
+				maxHeuristics = heuristics[i];
 			}
 		}
+		for (int i = 0; i < heuristics.Count; i++)
+		{
+			if (heuristics[i] < maxHeuristics)
+			{
+				heuristics.Remove(heuristics[i]);
+				possibleMoves.Remove(possibleMoves[i]);
+				i--;
+			}
+		}
+		//check this return
+		return possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
 	}
 
-	//Create a clone board to run simulations on
-	public MainGame setCloneBoard()
+	private double minimax(MainGame board, int depth, bool maxPlayer, double alpha, double beta)
 	{
-		if (clone != null)
+		if (depth == 0)
 		{
-			float posY = clone.transform.position.y - 13;
-			if (clone.thisHeurusic==0)
-			{
-				Destroy(clone.gameObject);
-			}
-			clone = Instantiate(this);
-			clone.transform.position = new Vector3(0, posY, 0);
+			return board.getSimpleHeuristic(board, Piece.Type.black);
+		}
+		Piece.Type type;
+
+		if (maxPlayer == true)
+		{
+			type = Piece.Type.black;
 		}
 		else
 		{
-			clone = Instantiate(this);
-			clone.transform.position = new Vector3(0, -13, 0);
+			type = Piece.Type.white;
+		}
+
+		List<Move> possibleMoves = board.getAllValidMoves(type);
+
+		double initial = 0;
+		MainGame clone = null;
+		if (maxPlayer)
+		{
+			initial = double.NegativeInfinity;
+			for (int i = 0; i < possibleMoves.Count; i++)
+			{
+				clone = board.setCloneBoard();
+				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+				clone.findEquivilantCell(possibleMoves[i].getCell()));
+				Debug.Log(moved + " 2");
+
+				double result = minimax(clone, depth - 1, !(maxPlayer), alpha, beta);
+
+				initial = System.Math.Max(result, initial);
+				alpha = System.Math.Max(alpha, initial);
+				//Destroy(clone.gameObject);
+
+				if (alpha >= beta)
+					break;
+			}
+		}
+		//minimizing
+		else
+		{
+			initial = double.PositiveInfinity;
+			for (int i = 0; i < possibleMoves.Count; i++)
+			{
+				clone = board.setCloneBoard();
+				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+				clone.findEquivilantCell(possibleMoves[i].getCell()));
+				//Debug.Log(moved + " 3");
+				//Debug.Log("Piece + " + possibleMoves[i].getPiece() + " Cell + " + possibleMoves[i].getCell());
+
+				double result = minimax(clone, depth - 1, !(maxPlayer), alpha, beta);
+
+				initial = System.Math.Min(result, initial);
+				alpha = System.Math.Min(alpha, initial);
+
+				//Destroy(clone.gameObject);
+				if (alpha >= beta)
+					break;
+			}
+		}
+		return initial;
+	}
+
+	void startAI()
+	{
+		AImoving = true;
+		Move m = minimaxStart(this, 2);
+		makeMove(m.getPiece(), m.getCell());
+	}
+
+	//Tactical AI
+	void minimaxTctical()
+	{
+
+	}
+
+	//Create a clone board to run simulations on
+	MainGame setCloneBoard()
+	{
+		if (clone != null)
+		{
+			Destroy(clone.gameObject);
+		}
+		clone = Instantiate(this);
+		clone.transform.position = new Vector3(0, -13, 0);
+		Piece[] clonePieces = FindObjectsOfType<Piece>();
+		Cell[] cloneCells = FindObjectsOfType<Cell>();
+		foreach (Piece cp in clonePieces)
+		{
+			if (cp.transform.parent.parent.name.Equals("Board(Clone)"))
+			{
+				cp.tag = "clone";
+			}
+		}
+		foreach (Cell cc in cloneCells)
+		{
+			if (cc.transform.parent.parent.name.Equals("Board(Clone)"))
+			{
+				cc.tag = "clone";
+			}
 		}
 		return clone;
+	}
+
+	//Return number of pieces left for a player
+	int getSimpleHeuristic(MainGame board, Piece.Type type)
+	{
+		int numPieceForPlayer = 0;
+		int numPieceForOpp = 0;
+		List<Piece> boardPieces = new List<Piece>();
+		foreach (Piece p in FindObjectsOfType<Piece>())
+		{
+			if (p.transform.parent.parent.GetComponent<MainGame>() == board.GetComponent<MainGame>())
+			{
+				boardPieces.Add(p);
+			}
+		}
+		foreach (Piece p in boardPieces)
+		{
+			if (p.type == type && p.isActive)
+			{
+				numPieceForPlayer++;
+				if (p.isKing)
+				{
+					numPieceForPlayer++;
+				}
+			}
+			else if (p.type != type && p.isActive)
+			{
+				numPieceForOpp++;
+				if (p.isKing)
+				{
+					numPieceForOpp++;
+				}
+			}
+		}
+		return numPieceForPlayer - numPieceForOpp;
 	}
 
 	//Check if pieces are left
@@ -507,7 +650,7 @@ public class MainGame : MonoBehaviour
 		List<Piece> boardPieces = new List<Piece>();
 		foreach (Piece p in pieces)
 		{
-			if (p.cell.mainGame == GetComponent<MainGame>())
+			if (p.transform.parent.parent.GetComponent<MainGame>() == gameObject.GetComponent<MainGame>())
 			{
 				boardPieces.Add(p);
 			}

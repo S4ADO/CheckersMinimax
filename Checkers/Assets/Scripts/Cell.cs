@@ -3,7 +3,7 @@
 public class Cell : MonoBehaviour
 {
 	//Declare cell properties
-	public enum SpecialPosition {edge, corner}
+	public enum SpecialPosition { edge, corner }
 	public SpecialPosition specialPosition;
 	public int row, col;
 	public Cell topLeft, topRight, bottomLeft, bottomRight;
@@ -16,20 +16,11 @@ public class Cell : MonoBehaviour
 		Piece[] pieces = FindObjectsOfType<Piece>();
 		foreach (Piece piece in pieces)
 		{
-			if (!piece.tag.Equals("clone"))
+			if (piece.cell == this)
 			{
-				if (piece.cell == this)
-				{
-					this.piece = piece;
-				}
+				this.piece = piece;
 			}
 		}
-	}
-	
-	// Update is called once per frame
-	void Update ()
-	{
-		
 	}
 
 	//For humans playing

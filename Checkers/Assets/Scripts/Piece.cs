@@ -51,15 +51,6 @@ public class Piece : MonoBehaviour
 		gameObject.SetActive(false);
 	}
 
-	// Update is called once per frame
-	void Update()
-	{
-		if (!isActive && cell != null)
-		{
-			Debug.LogError("Inactive piece with none-null position");
-		}
-	}
-
 	//Create king
 	public void makeKing()
 	{
