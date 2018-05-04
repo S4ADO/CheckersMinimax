@@ -9,7 +9,7 @@ public class Piece : MonoBehaviour
 	public bool isKing = false;
 	public Sprite kingSprite;
 	public bool isActive = true;
-	public MainGame mainGame;
+	public Board mainBoard;
 	public LayerMask touchInputMask = 2;
 
 	//Init
@@ -63,18 +63,17 @@ public class Piece : MonoBehaviour
 	{
 		if (type == Type.black)
 		{
-			if (mainGame.turn == MainGame.Turn.black)
+			if (mainBoard.turn == Board.Turn.black)
 			{
-				mainGame.selectedPiece = this;
+				mainBoard.selectedPiece = this;
 			}
 		}
 		else if (type == Type.white)
 		{
-			if (mainGame.turn == MainGame.Turn.white)
+			if (mainBoard.turn == Board.Turn.white)
 			{
-				mainGame.selectedPiece = this;
+				mainBoard.selectedPiece = this;
 			}
 		}
-
 	}
 }

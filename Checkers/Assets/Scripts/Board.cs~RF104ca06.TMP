@@ -12,21 +12,25 @@ public class Board : MonoBehaviour
 	public enum GameType { hvs, hvt, tvs }
 	public GameType gameType;
 	public bool gameOver = false;
+
 	//Player turn
 	public enum Turn { black, white }
 	public Turn turn;
 	public Text turnText;
+
 	//Selected piece and cell
 	public Cell selectedCell;
 	public Piece selectedPiece;
+
 	//The clone game to run simulations on
 	public Board clone;
 	public MainGame theMainGame;
+	private bool isClone = false;
 
 	//Initialise the game state
 	public void init(GameType type)
 	{
-		theMainGame = GameObject.Find("MainGame").GetComponent<MainGame>();
+		theMainGame = GameObject.Find("Board").GetComponent<MainGame>();
 		gameType = type;
 		//Assign random first turn
 		//turn = (int)Time.time % 2 == 0 ? Turn.black : Turn.white;
@@ -84,7 +88,7 @@ public class Board : MonoBehaviour
 		List<Piece> boardPieces = new List<Piece>();
 		foreach (Piece p in pieces)
 		{
-			if (p.cell.mainBoard == GetComponent<Board>())
+			if (p.cell.mainGame == GetComponent<MainGame>())
 			{
 				boardPieces.Add(p);
 			}
@@ -297,7 +301,7 @@ public class Board : MonoBehaviour
 		Piece[] pieces = FindObjectsOfType<Piece>();
 		foreach (Piece p in pieces)
 		{
-			if (p.cell.mainBoard == GetComponent<Board>())
+			if (p.cell.mainGame == GetComponent<MainGame>())
 			{
 				if (p.cell.row == piece.cell.row &&
 					p.cell.col == piece.cell.col &&
@@ -317,7 +321,7 @@ public class Board : MonoBehaviour
 		Cell[] cells = FindObjectsOfType<Cell>();
 		foreach (Cell c in cells)
 		{
-			if (c.mainBoard == GetComponent<Board>())
+			if (c.mainGame == GetComponent<MainGame>())
 			{
 				if (c.row == cell.row && c.col == cell.col)
 				{
@@ -351,7 +355,7 @@ public class Board : MonoBehaviour
 		{
 			validMoves = getAllValidMoves(Piece.Type.white);
 		}
-
+		Move currentMove = new Move(selectedPiece, selectedCell);
 		Piece curPiece = selectedPiece;
 		foreach (Move move in validMoves)
 		{
@@ -375,6 +379,7 @@ public class Board : MonoBehaviour
 				}
 			}
 		}
+
 
 		if (ate)
 		{
@@ -402,17 +407,17 @@ public class Board : MonoBehaviour
 			selectedCell = null;
 			turn = turn == Turn.black ? Turn.white : Turn.black;
 			turnText.text = turn == Turn.black ? "Turn: Black" : "Turn: White";
+			checkWin();
 			return true;
 		}
 		else
 		{
-			Debug.Log("Invalid move of piece " + selectedPiece.name + " to: " + selectedCell.name);
 			return false;
 		}
 	}
 
 	//Create a clone board to run simulations on
-	public Board setCloneBoard()
+	public MainGame setCloneBoard()
 	{
 		if (clone != null)
 		{
@@ -430,5 +435,52 @@ public class Board : MonoBehaviour
 			clone.transform.position = new Vector3(0, -13, 0);
 		}
 		return clone;
+	}
+
+	//Check if pieces are left
+	void checkWin()
+	{
+		Piece[] pieces = FindObjectsOfType<Piece>();
+		List<Piece> boardPieces = new List<Piece>();
+		foreach (Piece p in pieces)
+		{
+			if (p.cell.mainGame == GetComponent<MainGame>())
+			{
+				boardPieces.Add(p);
+			}
+		}
+		bool blackExists = false;
+		bool whiteExists = false;
+		//Check black 
+		foreach (Piece piece in boardPieces)
+		{
+			if (piece.isActive && piece.type == Piece.Type.black)
+			{
+				blackExists = true;
+			}
+		}
+		//Check white
+		foreach (Piece piece in boardPieces)
+		{
+			if (piece.isActive && piece.type == Piece.Type.white)
+			{
+				whiteExists = true;
+			}
+		}
+		if (!whiteExists)
+		{
+			Debug.Log("Black wins");
+			GameOver();
+		}
+		if (!blackExists)
+		{
+			Debug.Log("White wins");
+			GameOver();
+		}
+	}
+
+	void GameOver()
+	{
+		gameOver = true;
 	}
 }

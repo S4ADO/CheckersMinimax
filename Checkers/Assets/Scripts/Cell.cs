@@ -7,7 +7,7 @@ public class Cell : MonoBehaviour
 	public SpecialPosition specialPosition;
 	public int row, col;
 	public Cell topLeft, topRight, bottomLeft, bottomRight;
-	public MainGame mainGame;
+	public Board mainBoard;
 	public Piece piece = null;
 
 	//Init
@@ -26,10 +26,10 @@ public class Cell : MonoBehaviour
 	//For humans playing
 	void OnMouseDown()
 	{
-		if (mainGame.selectedPiece != null && piece == null)
+		if (mainBoard.selectedPiece != null && piece == null)
 		{
-			mainGame.selectedCell = this;
-			mainGame.makeMove();
+			mainBoard.selectedCell = this;
+			mainBoard.makeMove();
 		}
 	}
 }

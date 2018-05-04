@@ -4,20 +4,14 @@ using UnityEngine;
 
 public class MinimaxTactical : MonoBehaviour
 {
-	private int depth = 1, loopCount = 0;
-	private MainGame board;
-
-	//Empty constructor
-	public MinimaxTactical(MainGame board)
-	{
-		this.board = board;
-	}
+	public static int depth, loopCount = 0;
+	public static Board board;
 
 	//Simple search minimax with AB pruning
 	/**
 	 * TODO: personalise code
 	 * */
-	public Move minimaxStart()
+	public static Move minimaxStart()
 	{
 		bool maxPlayer = true;
 		double alpha = double.NegativeInfinity;
@@ -26,7 +20,7 @@ public class MinimaxTactical : MonoBehaviour
 		List<Move> possibleMoves = board.getAllValidMoves(Piece.Type.black);
 		List<double> heuristics = new List<double>();
 
-		MainGame clone = null;
+		Board clone = null;
 		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 		stopwatch.Start();
 		for (int i = 0; i < possibleMoves.Count; i++)
@@ -36,7 +30,7 @@ public class MinimaxTactical : MonoBehaviour
 
 			loopCount++;
 			clone = board.setCloneBoard();
-			bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+			clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
 			heuristics.Add(minimax(clone, depth - 1, !maxPlayer, alpha, beta));
 			Destroy(clone.gameObject);
@@ -70,7 +64,7 @@ public class MinimaxTactical : MonoBehaviour
 		return possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
 	}
 
-	private double minimax(MainGame board, int depth, bool maxPlayer, double alpha, double beta)
+	private static double minimax(Board board, int depth, bool maxPlayer, double alpha, double beta)
 	{
 		if (depth == 0)
 		{
@@ -95,7 +89,7 @@ public class MinimaxTactical : MonoBehaviour
 		List<Move> possibleMoves = board.getAllValidMoves(type);
 
 		double initial = 0;
-		MainGame clone = null;
+		Board clone = null;
 		if (maxPlayer)
 		{
 			initial = double.NegativeInfinity;
@@ -103,7 +97,7 @@ public class MinimaxTactical : MonoBehaviour
 			{
 				loopCount++;
 				clone = board.setCloneBoard();
-				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
 
 				double result = minimax(clone, depth - 1, !(maxPlayer), alpha, beta);
@@ -126,7 +120,7 @@ public class MinimaxTactical : MonoBehaviour
 			{
 				loopCount++;
 				clone = board.setCloneBoard();
-				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
 
 				double result = minimax(clone, depth - 1, !(maxPlayer), alpha, beta);
@@ -145,14 +139,14 @@ public class MinimaxTactical : MonoBehaviour
 	}
 
 	//Return number of pieces left for a player
-	private int getTacticalHeuristic(MainGame board, Piece.Type type)
+	private static int getTacticalHeuristic(Board board, Piece.Type type)
 	{
 		int numPieceForPlayer = 0;
 		int numPieceForOpp = 0;
 		List<Piece> boardPieces = new List<Piece>();
 		foreach (Piece p in FindObjectsOfType<Piece>())
 		{
-			if (p.cell.mainGame == board)
+			if (p.cell.mainBoard == board)
 			{
 				boardPieces.Add(p);
 			}

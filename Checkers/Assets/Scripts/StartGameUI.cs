@@ -15,22 +15,22 @@ public class StartGameUI: MonoBehaviour
 	//Human vs Search AI
 	public void play1()
 	{
-		setGame(MainGame.GameType.hvs);
+		setGame(Board.GameType.hvs);
 	}
 
 	//Human vs Tactical AI
 	public void play2()
 	{
-		setGame(MainGame.GameType.hvt);
+		setGame(Board.GameType.hvt);
 	}
 
 	//AI vs AI
 	public void play3()
 	{
-		setGame(MainGame.GameType.tvs);
+		setGame(Board.GameType.tvs);
 	}
 
-	void setGame(MainGame.GameType type)
+	void setGame(Board.GameType type)
 	{
 		game.gameObject.SetActive(true);
 		game.init(type);

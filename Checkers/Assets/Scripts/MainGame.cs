@@ -4,299 +4,21 @@ using UnityEngine.UI;
 
 public class MainGame : MonoBehaviour
 {
-	public int thisHeurusic = 0;
-
-	public string movesMade = "";
 	//UI to be used when game is over
 	public StartGameUI UI;
-	//Type of game (human vs AI / AI vs AI)
-	public enum GameType { hvs, hvt, tvs }
-	public GameType gameType;
 	public bool gameOver = false;
-	//Player turn
-	public enum Turn { black, white }
-	public Turn turn;
-	public Text turnText;
-	//Selected piece and cell
-	public Cell selectedCell;
-	public Piece selectedPiece;
-	//The clone game to run simulations on
-	public MainGame clone;
-	public MainGame theMainGame;
-	private bool isClone = false;
+	//Reference to main board
+	public Board mainBoard;
 
 	//Initialise the game state
-	public void init(GameType type)
+	public void init(Board.GameType type)
 	{
-		theMainGame = GameObject.Find("Board").GetComponent<MainGame>();
-		gameType = type;
-		//Assign random first turn
-		//turn = (int)Time.time % 2 == 0 ? Turn.black : Turn.white;
-		turn = Turn.white;
-		turnText.text = turn == Turn.white ? "Turn: White" : "Turn: Black";
-		//Assign cells their adjacents
-		Cell[] cells = FindObjectsOfType<Cell>();
-		foreach (Cell cell in cells)
-		{
-			//This cell's IDs
-			int cellRow = cell.row;
-			int cellCol = cell.col;
-			//Adjacent IDs
-			int tlR, tlC, trR, trC, blR, blC, brR, brC;
-			tlR = cellRow - 1;
-			tlC = cellCol + 1;
-			trR = cellRow + 1;
-			trC = cellCol + 1;
-			blR = cellRow - 1;
-			blC = cellCol - 1;
-			brR = cellRow + 1;
-			brC = cellCol - 1;
-			//Check if a cell with these IDs exists
-			foreach (Cell cellCheck in cells)
-			{
-				//Assign top left
-				if (cellCheck.row == tlR && cellCheck.col == tlC)
-				{
-					cell.topLeft = cellCheck;
-				}
-				//Assign top right
-				else if (cellCheck.row == trR && cellCheck.col == trC)
-				{
-					cell.topRight = cellCheck;
-				}
-				//Assign bottom left
-				else if (cellCheck.row == blR && cellCheck.col == blC)
-				{
-					cell.bottomLeft = cellCheck;
-				}
-				//Assign bottom right
-				else if (cellCheck.row == brR && cellCheck.col == brC)
-				{
-					cell.bottomRight = cellCheck;
-				}
-			}
-		}
-	}
-
-	//Get all valid moves for a given piece
-	public List<Move> getAllValidMoves(Piece.Type type)
-	{
-		List<Move> validMoves = new List<Move>();
-		Piece[] pieces = FindObjectsOfType<Piece>();
-		List<Piece> boardPieces = new List<Piece>();
-		foreach (Piece p in pieces)
-		{
-			if (p.cell.mainGame == GetComponent<MainGame>())
-			{
-				boardPieces.Add(p);
-			}
-		}
-		bool canEat = false;
-		foreach (Piece piece in boardPieces)
-		{
-			//Right colour
-			if (piece.isActive && piece.type == type)
-			{
-				//Moving down
-				if (piece.type == Piece.Type.black && !piece.isKing)
-				{
-					//Check if cell is occupied BL
-					if (piece.cell.bottomLeft != null)
-					{
-						if (!(piece.cell.bottomLeft.piece == null))
-						{
-							if (piece.cell.bottomLeft.bottomLeft != null && piece.cell.bottomLeft.piece.type != piece.type)
-							{
-								//Occupied so check if resultant cell is empty so can eat
-								if (piece.cell.bottomLeft.bottomLeft.piece == null)
-								{
-									Move move = new Move(piece, piece.cell.bottomLeft.bottomLeft, piece.cell.bottomLeft.piece);
-									validMoves.Add(move);
-									canEat = true;
-								}
-							}
-						}
-						//Not occupied so can move
-						else
-						{
-							Move move = new Move(piece, piece.cell.bottomLeft);
-							validMoves.Add(move);
-						}
-					}
-					//Check if cell is occupied BR
-					if (piece.cell.bottomRight != null)
-					{
-						if (!(piece.cell.bottomRight.piece == null))
-						{
-							if (piece.cell.bottomRight.bottomRight != null && piece.cell.bottomRight.piece.type != piece.type)
-							{
-								if (piece.cell.bottomRight.bottomRight.piece == null)
-								{
-									Move move = new Move(piece, piece.cell.bottomRight.bottomRight, piece.cell.bottomRight.piece);
-									validMoves.Add(move);
-									canEat = true;
-								}
-							}
-						}
-						else
-						{
-							Move move2 = new Move(piece, piece.cell.bottomRight);
-							validMoves.Add(move2);
-						}
-					}
-				}
-				//Moving up
-				else if (piece.type == Piece.Type.white && !piece.isKing)
-				{
-					if (piece.cell.topLeft != null)
-					{
-						if (!(piece.cell.topLeft.piece == null))
-						{
-							if (piece.cell.topLeft.topLeft != null && piece.cell.topLeft.piece.type != piece.type)
-							{
-								//Occupied so check if resultant cell is empty so can eat
-								if (piece.cell.topLeft.topLeft.piece == null)
-								{
-									Move move = new Move(piece, piece.cell.topLeft.topLeft, piece.cell.topLeft.piece);
-									validMoves.Add(move);
-									canEat = true;
-								}
-							}
-						}
-						//Not occupied so can move
-						else
-						{
-							Move move = new Move(piece, piece.cell.topLeft);
-							validMoves.Add(move);
-						}
-					}
-					//Check if cell is occupied TR
-					if (piece.cell.topRight != null)
-					{
-						if (!(piece.cell.topRight.piece == null))
-						{
-							if (piece.cell.topRight.topRight != null && piece.cell.topRight.piece.type != piece.type)
-							{
-								if (piece.cell.topRight.topRight.piece == null)
-								{
-									Move move = new Move(piece, piece.cell.topRight.topRight, piece.cell.topRight.piece);
-									validMoves.Add(move);
-									canEat = true;
-								}
-							}
-						}
-						else
-						{
-							Move move2 = new Move(piece, piece.cell.topRight);
-							validMoves.Add(move2);
-						}
-					}
-				}
-				//King movement
-				else if (piece.isKing)
-				{
-					if (piece.cell.topLeft != null)
-					{
-						if (!(piece.cell.topLeft.piece == null))
-						{
-							if (piece.cell.topLeft.topLeft != null && piece.cell.topLeft.piece.type != piece.type)
-							{
-								//Occupied so check if resultant cell is empty so can eat
-								if (piece.cell.topLeft.topLeft.piece == null)
-								{
-									Move move = new Move(piece, piece.cell.topLeft.topLeft, piece.cell.topLeft.piece);
-									validMoves.Add(move);
-									canEat = true;
-								}
-							}
-						}
-						//Not occupied so can move
-						else
-						{
-							Move move = new Move(piece, piece.cell.topLeft);
-							validMoves.Add(move);
-						}
-					}
-					//Check if cell is occupied TR
-					if (piece.cell.topRight != null)
-					{
-						if (!(piece.cell.topRight.piece == null))
-						{
-							if (piece.cell.topRight.topRight != null && piece.cell.topRight.piece.type != piece.type)
-							{
-								if (piece.cell.topRight.topRight.piece == null)
-								{
-									Move move = new Move(piece, piece.cell.topRight.topRight, piece.cell.topRight.piece);
-									validMoves.Add(move);
-									canEat = true;
-								}
-							}
-						}
-						else
-						{
-							Move move2 = new Move(piece, piece.cell.topRight);
-							validMoves.Add(move2);
-						}
-					}
-					//Check if cell is occupied BL
-					if (piece.cell.bottomLeft != null)
-					{
-						if (!(piece.cell.bottomLeft.piece == null))
-						{
-							if (piece.cell.bottomLeft.bottomLeft != null && piece.cell.bottomLeft.piece.type != piece.type)
-							{
-								//Occupied so check if resultant cell is empty so can eat
-								if (piece.cell.bottomLeft.bottomLeft.piece == null)
-								{
-									Move move = new Move(piece, piece.cell.bottomLeft.bottomLeft, piece.cell.bottomLeft.piece);
-									validMoves.Add(move);
-									canEat = true;
-								}
-							}
-						}
-						//Not occupied so can move
-						else
-						{
-							Move move = new Move(piece, piece.cell.bottomLeft);
-							validMoves.Add(move);
-						}
-					}
-					//Check if cell is occupied BR
-					if (piece.cell.bottomRight != null)
-					{
-						if (!(piece.cell.bottomRight.piece == null))
-						{
-							if (piece.cell.bottomRight.bottomRight != null && piece.cell.bottomRight.piece.type != piece.type)
-							{
-								if (piece.cell.bottomRight.bottomRight.piece == null)
-								{
-									Move move = new Move(piece, piece.cell.bottomRight.bottomRight, piece.cell.bottomRight.piece);
-									validMoves.Add(move);
-									canEat = true;
-								}
-							}
-						}
-						else
-						{
-							Move move2 = new Move(piece, piece.cell.bottomRight);
-							validMoves.Add(move2);
-						}
-					}
-				}
-			}
-		}
-		//Remove all other moves if can eat
-		if (canEat)
-		{
-			validMoves.RemoveAll(m => m.getJumped() == null);
-		}
-		return validMoves;
+		mainBoard.init(type);
 	}
 
 	//AI functions here
 	void Update()
 	{
-
 		if (Input.GetKeyUp(KeyCode.M))
 		{
 			startAI();
@@ -312,7 +34,7 @@ public class MainGame : MonoBehaviour
 		Piece piece = null;
 		foreach (Piece p in pieces)
 		{
-			if (p.cell.mainGame == theMainGame)
+			if (p.cell.mainBoard == mainBoard)
 			{
 				if (p.cell.row == int.Parse(moveArr[0]) && p.cell.col == int.Parse(moveArr[1]))
 				{
@@ -325,7 +47,7 @@ public class MainGame : MonoBehaviour
 		Cell cell = null;
 		foreach (Cell c in Cells)
 		{
-			if (c.mainGame == theMainGame)
+			if (c.mainBoard == mainBoard)
 			{
 				if (c.row == int.Parse(moveArr[2]) && c.col == int.Parse(moveArr[3]))
 				{
@@ -334,128 +56,7 @@ public class MainGame : MonoBehaviour
 				}
 			}
 		}
-		makeMove(piece, cell);
-	}
-
-	public Piece findEquivilantPiece(Piece piece)
-	{
-		Piece toRet = null;
-		Piece[] pieces = FindObjectsOfType<Piece>();
-		foreach (Piece p in pieces)
-		{
-			if (p.cell.mainGame == GetComponent<MainGame>())
-			{
-				if (p.cell.row == piece.cell.row &&
-					p.cell.col == piece.cell.col &&
-					p.type == piece.type && p.isKing == piece.isKing)
-				{
-					toRet = p;
-					break;
-				}
-			}
-		}
-		return toRet;
-	}
-
-	public Cell findEquivilantCell(Cell cell)
-	{
-		Cell toRet = null;
-		Cell[] cells = FindObjectsOfType<Cell>();
-		foreach (Cell c in cells)
-		{
-			if (c.mainGame == GetComponent<MainGame>())
-			{
-				if (c.row == cell.row && c.col == cell.col)
-				{
-					toRet = c;
-					break;
-				}
-			}
-		}
-		return toRet;
-	}
-
-	//Make the move
-	public bool makeMove(Piece sPiece = null, Cell sCell = null)
-	{
-		//For AI
-		if (sPiece != null && sCell != null)
-		{
-			selectedCell = sCell;
-			selectedPiece = sPiece;
-		}
-
-		bool ate = false;
-		bool moved = false;
-
-		List<Move> validMoves = new List<Move>();
-		if (turn == Turn.black)
-		{
-			validMoves = getAllValidMoves(Piece.Type.black);
-		}
-		else if (turn == Turn.white)
-		{
-			validMoves = getAllValidMoves(Piece.Type.white);
-		}
-		Move currentMove = new Move(selectedPiece, selectedCell);
-		Piece curPiece = selectedPiece;
-		foreach (Move move in validMoves)
-		{
-			if (move.getCell() == (selectedCell) && move.getPiece() == (selectedPiece))
-			{
-				movesMade = movesMade + selectedPiece.name + selectedCell.name + ";";
-				selectedPiece.movePiece(selectedCell);
-
-				//Check if king has been made
-				if ((selectedCell.col == 8 && selectedPiece.type == Piece.Type.white) ||
-					(selectedCell.col == 1 && selectedPiece.type == Piece.Type.black))
-				{
-					selectedPiece.makeKing();
-				}
-				moved = true;
-				//Remove jumped over piece
-				if (move.getJumped() != null)
-				{
-					move.getJumped().remove();
-					ate = true;
-				}
-			}
-		}
-
-
-		if (ate)
-		{
-			if (turn == Turn.black)
-			{
-				validMoves = getAllValidMoves(Piece.Type.black);
-			}
-			else if (turn == Turn.white)
-			{
-				validMoves = getAllValidMoves(Piece.Type.white);
-			}
-			Move newMove = new Move(curPiece, null);
-			foreach (Move move in validMoves)
-			{
-				if (newMove.getPiece() == move.getPiece() && move.getJumped() != null)
-				{
-					selectedCell = null;
-					return true;
-				}
-			}
-		}
-
-		if (moved)
-		{
-			selectedCell = null;
-			turn = turn == Turn.black ? Turn.white : Turn.black;
-			turnText.text = turn == Turn.black ? "Turn: Black" : "Turn: White";
-			checkWin();
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		mainBoard.makeMove(piece, cell);
 	}
 
 	void startAI()
@@ -463,41 +64,20 @@ public class MainGame : MonoBehaviour
 		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 		stopwatch.Start();
 		MinimaxSearch.depth = 2;
-		MinimaxSearch.board = this;
+		MinimaxSearch.board = mainBoard;
 		Move m = MinimaxSearch.minimaxStart();
 		stopwatch.Stop();
 		Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
 		stopwatch.Reset();
-		makeMove(m.getPiece(), m.getCell());
-		MainGame[] mg = FindObjectsOfType<MainGame>();
-		foreach (MainGame mgg in mg)
+		mainBoard.makeMove(m.getPiece(), m.getCell());
+		Board[] mg = FindObjectsOfType<Board>();
+		foreach (Board mgg in mg)
 		{
-			if (mgg.thisHeurusic == 0 && mgg != theMainGame)
+			if (mgg.thisHeurusic == 0 && mgg != mainBoard)
 			{
 				Destroy(mgg.gameObject);
 			}
 		}
-	}
-
-	//Create a clone board to run simulations on
-	public MainGame setCloneBoard()
-	{
-		if (clone != null)
-		{
-			float posY = clone.transform.position.y - 13;
-			if (clone.thisHeurusic==0)
-			{
-				Destroy(clone.gameObject);
-			}
-			clone = Instantiate(this);
-			clone.transform.position = new Vector3(0, posY, 0);
-		}
-		else
-		{
-			clone = Instantiate(this);
-			clone.transform.position = new Vector3(0, -13, 0);
-		}
-		return clone;
 	}
 
 	//Check if pieces are left
@@ -507,7 +87,7 @@ public class MainGame : MonoBehaviour
 		List<Piece> boardPieces = new List<Piece>();
 		foreach (Piece p in pieces)
 		{
-			if (p.cell.mainGame == GetComponent<MainGame>())
+			if (p.cell.mainBoard == mainBoard)
 			{
 				boardPieces.Add(p);
 			}
