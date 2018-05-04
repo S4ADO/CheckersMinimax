@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 public class MainGame : MonoBehaviour
 {
-	bool debugged = false;
-
 	//UI to be used when game is over
 	public StartGameUI UI;
 	//Type of game (human vs AI / AI vs AI)
@@ -32,7 +30,7 @@ public class MainGame : MonoBehaviour
 		//Assign random first turn
 		//turn = (int)Time.time % 2 == 0 ? Turn.black : Turn.white;
 		turn = Turn.white;
-		turnText.text = turn == Turn.black ? "Turn: Black" : "Turn: White";
+		turnText.text = turn == Turn.white ? "Turn: White" : "Turn: Black";
 		//Assign cells their adjacents
 		Cell[] cells = FindObjectsOfType<Cell>();
 		foreach (Cell cell in cells)
@@ -302,6 +300,40 @@ public class MainGame : MonoBehaviour
 		}
 	}
 
+	public void getHumanMove()
+	{
+		InputField IF = GameObject.Find("InputMove").GetComponent<InputField>();
+		string move = IF.text;
+		string[] moveArr = move.Split(',');
+		Piece[] pieces = FindObjectsOfType<Piece>();
+		Piece piece=null;
+		foreach (Piece p in pieces)
+		{
+			if (p.transform.parent.parent.GetComponent<MainGame>() == GameObject.Find("Board").GetComponent<MainGame>())
+			{
+				if (p.cell.row == int.Parse(moveArr[0]) && p.cell.col == int.Parse(moveArr[1]))
+				{
+					piece = p;
+					Debug.Log(p);
+				}
+			}
+		}
+		Cell[] Cells = FindObjectsOfType<Cell>();
+		Cell cell=null;
+		foreach (Cell c in Cells)
+		{
+			if (c.transform.parent.parent.GetComponent<MainGame>() == GameObject.Find("Board").GetComponent<MainGame>())
+			{
+				if (c.row == int.Parse(moveArr[2]) && c.col == int.Parse(moveArr[3]))
+				{
+					cell = c;
+					Debug.Log(c);
+				}
+			}
+		}
+		makeMove(piece, cell);
+	}
+
 	Piece findEquivilantPiece(Piece piece)
 	{
 		Piece toRet = null;
@@ -366,6 +398,7 @@ public class MainGame : MonoBehaviour
 		Piece curPiece = selectedPiece;
 		foreach (Move move in validMoves)
 		{
+			Debug.Log(move.getCell() + "" +move.getPiece());
 			if (move.getCell()==(selectedCell) && move.getPiece()==(selectedPiece))
 			{
 				selectedPiece.movePiece(selectedCell);
