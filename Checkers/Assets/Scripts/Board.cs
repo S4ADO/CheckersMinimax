@@ -417,6 +417,7 @@ public class Board : MonoBehaviour
 	//Create a clone board to run simulations on
 	public Board setCloneBoard()
 	{
+		//Debug
 		if (clone != null)
 		{
 			float posY = clone.transform.position.y - 13;

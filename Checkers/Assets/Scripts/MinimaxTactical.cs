@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MinimaxTactical : MonoBehaviour
 {
-	public static int depth = 4, loopCount = 0;
+	public static int depth = 2, loopCount = 0;
 	public static Board board;
 
 	//Simple search minimax with AB pruning
@@ -18,7 +18,7 @@ public class MinimaxTactical : MonoBehaviour
 		double beta = double.PositiveInfinity;
 
 		List<Move> possibleMoves = board.getAllValidMoves(Piece.Type.white);
-		List<double> heuristics = new List<double>();
+		List<double> evalFunction = new List<double>();
 
 		if (board.firstMove)
 		{
@@ -38,30 +38,30 @@ public class MinimaxTactical : MonoBehaviour
 			clone = board.setCloneBoard();
 			clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
-			heuristics.Add(minimax(clone, depth - 1, !maxPlayer, alpha, beta));
+			evalFunction.Add(alphabeta(clone, depth - 1, !maxPlayer, alpha, beta));
 			Destroy(clone.gameObject);
 
 			stopwatchin.Stop();
-			Debug.Log("Time taken for individual loop:  " + (stopwatchin.Elapsed));
+			//Debug.Log("Time taken for individual loop:  " + (stopwatchin.Elapsed));
 			stopwatchin.Reset();
 		}
 		stopwatch.Stop();
-		Debug.Log("Time taken for minimax loop:  " + (stopwatch.Elapsed));
+		//Debug.Log("Time taken for minimax loop:  " + (stopwatch.Elapsed));
 		stopwatch.Reset();
 
-		double maxHeuristics = double.NegativeInfinity;
-		for (int i = heuristics.Count - 1; i >= 0; i--)
+		double maxEvalFunction = double.NegativeInfinity;
+		for (int i = evalFunction.Count - 1; i >= 0; i--)
 		{
-			if (heuristics[i] >= maxHeuristics)
+			if (evalFunction[i] >= maxEvalFunction)
 			{
-				maxHeuristics = heuristics[i];
+				maxEvalFunction = evalFunction[i];
 			}
 		}
-		for (int i = 0; i < heuristics.Count; i++)
+		for (int i = 0; i < evalFunction.Count; i++)
 		{
-			if (heuristics[i] < maxHeuristics)
+			if (evalFunction[i] < maxEvalFunction)
 			{
-				heuristics.Remove(heuristics[i]);
+				evalFunction.Remove(evalFunction[i]);
 				possibleMoves.Remove(possibleMoves[i]);
 				i--;
 			}
@@ -70,11 +70,11 @@ public class MinimaxTactical : MonoBehaviour
 		return possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
 	}
 
-	private static double minimax(Board board, int depth, bool maxPlayer, double alpha, double beta)
+	private static double alphabeta(Board board, int depth, bool maxPlayer, double alpha, double beta)
 	{
 		if (depth == 0)
 		{
-			int h = getTacticalHeuristic(board, Piece.Type.white);
+			int h = getTacticalEval(board, Piece.Type.white);
 			if (h == 0)
 			{
 				Destroy(board.gameObject);
@@ -94,11 +94,11 @@ public class MinimaxTactical : MonoBehaviour
 
 		List<Move> possibleMoves = board.getAllValidMoves(type);
 
-		double initial = 0;
+		double value = 0;
 		Board clone = null;
 		if (maxPlayer)
 		{
-			initial = double.NegativeInfinity;
+			value = double.NegativeInfinity;
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
 				loopCount++;
@@ -106,11 +106,11 @@ public class MinimaxTactical : MonoBehaviour
 				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
 
-				double result = minimax(clone, depth - 1, !(maxPlayer), alpha, beta);
-
-				initial = System.Math.Max(result, initial);
-				alpha = System.Math.Max(alpha, initial);
+				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 				Destroy(clone.gameObject);
+
+				value = System.Math.Max(eval, value);
+				alpha = System.Math.Max(alpha, value);
 
 				if (alpha >= beta)
 				{
@@ -121,7 +121,7 @@ public class MinimaxTactical : MonoBehaviour
 		//minimizing
 		else
 		{
-			initial = double.PositiveInfinity;
+			value = double.PositiveInfinity;
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
 				loopCount++;
@@ -129,27 +129,28 @@ public class MinimaxTactical : MonoBehaviour
 				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
 
-				double result = minimax(clone, depth - 1, !(maxPlayer), alpha, beta);
-
-				initial = System.Math.Min(result, initial);
-				alpha = System.Math.Min(alpha, initial);
-
+				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 				Destroy(clone.gameObject);
+
+				value = System.Math.Min(eval, value);
+				alpha = System.Math.Min(alpha, value);
+
 				if (alpha >= beta)
 				{
 					break;
 				}
 			}
 		}
-		return initial;
+		return value;
 	}
 
 	//Return number of pieces left for a player
-	private static int getTacticalHeuristic(Board board, Piece.Type type)
+	private static int getTacticalEval(Board board, Piece.Type type)
 	{
-		//Pawn = 5 + row number king = 10
 		int evalFunc = 0;
 		int evalFuncOpp = 0;
+		int numKings = 0, numKingsOpp = 0, numNormal = 0, numNormalOpp = 0;
+
 		List<Piece> boardPieces = new List<Piece>();
 		foreach (Piece p in FindObjectsOfType<Piece>())
 		{
@@ -158,46 +159,95 @@ public class MinimaxTactical : MonoBehaviour
 				boardPieces.Add(p);
 			}
 		}
+		//Get amount each side has
+		foreach (Piece p in boardPieces)
+		{
+			if (p.isActive)
+			{
+				if (p.type == type && p.isKing)
+				{
+					numKings++;
+				}
+				else if (p.type == type && !p.isKing)
+				{
+					numNormal++;
+				}
+				else if (p.type != type && p.isKing)
+				{
+					numKingsOpp++;
+				}
+				else if (p.type != type && !p.isKing)
+				{
+					numNormalOpp++;
+				}
+			}
+		}
+		int numTotal = numNormal + numKings;
+		int numTotalOpp = numNormalOpp + numKingsOpp;
+
 		foreach (Piece p in boardPieces)
 		{
 			//TactialAI
 			if (p.type == type && p.isActive)
 			{
-				evalFunc += p.isKing ? 10 : 5;
-				//The closer to being king the higher the evaluation 
-				if (!p.isKing)
+				//Nearing end game 
+				if ((numTotal) > (numTotalOpp + 3) && numKings >= 2)
 				{
-					switch (p.cell.col)
+					evalFunc += p.isKing ? 2 : 1;
+				}
+				//Normal evaluation
+				else
+				{
+					evalFunc += p.isKing ? 2 : 1;
+					//The closer to being king the higher the evaluation
+					if (!p.isKing)
 					{
-						case 6:
-							evalFunc += 1;
-							break;
-						case 7:
-							evalFunc += 2;
-							break;
+						switch (p.cell.col)
+						{
+							case 5:
+								evalFunc += 1;
+								break;
+							case 6:
+								evalFunc += 2;
+								break;
+							case 7:
+								evalFunc += 3;
+								break;
+						}
+						//Pieces on the edge have an advantage of not being able to be eaten
+						evalFunc += p.cell.specialPosition == Cell.SpecialPosition.edge ? 1 : 0;
 					}
-					//Pieces on the edge have an advantage of not being able to be eaten
-					evalFunc += p.cell.specialPosition == Cell.SpecialPosition.edge ? 1 : 0;
 				}
 			}
 			//Opponent
 			else if (p.type != type && p.isActive)
 			{
-				evalFuncOpp += p.isKing ? 10 : 5;
-				//The closer to being king the higher the evaluation (black piece moves downwards)
-				if (!p.isKing)
+				//Nearing end game 
+				if ((numTotalOpp) > (numTotal + 3) && numKingsOpp >= 2)
 				{
-					switch (p.cell.col)
+					evalFuncOpp += p.isKing ? 2 : 1;
+				}
+				else
+				{
+					evalFuncOpp += p.isKing ? 2 : 1;
+					//The closer to being king the higher the evaluation (black piece moves downwards)
+					if (!p.isKing)
 					{
-						case 3:
-							evalFuncOpp += 1;
-							break;
-						case 2:
-							evalFuncOpp += 2;
-							break;
+						switch (p.cell.col)
+						{
+							case 4:
+								evalFuncOpp += 1;
+								break;
+							case 3:
+								evalFuncOpp += 2;
+								break;
+							case 2:
+								evalFuncOpp += 3;
+								break;
+						}
+						//Pieces on the edge have an advantage of not being able to be eaten
+						evalFuncOpp += p.cell.specialPosition == Cell.SpecialPosition.edge ? 1 : 0;
 					}
-					//Pieces on the edge have an advantage of not being able to be eaten
-					evalFuncOpp += p.cell.specialPosition == Cell.SpecialPosition.edge ? 1 : 0;
 				}
 			}
 		}

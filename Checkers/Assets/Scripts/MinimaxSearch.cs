@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MinimaxSearch : MonoBehaviour
 {
-	public static int depth, loopCount = 0;
+	public static int depth = 2, loopCount = 0, loopCount1 = 0, loopCount2 = 0;
 	public static Board board;
 
 	//Simple search minimax with AB pruning
@@ -14,11 +14,10 @@ public class MinimaxSearch : MonoBehaviour
 	public static Move minimaxStart()
 	{
 		bool maxPlayer = true;
-		double alpha = double.NegativeInfinity;
-		double beta = double.PositiveInfinity;
+		double alpha = double.NegativeInfinity, beta = double.PositiveInfinity;
 
 		List<Move> possibleMoves = board.getAllValidMoves(Piece.Type.black);
-		List<double> heuristics = new List<double>();
+		List<double> evalFunction = new List<double>();
 
 		Board clone = null;
 		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
@@ -32,48 +31,49 @@ public class MinimaxSearch : MonoBehaviour
 			clone = board.setCloneBoard();
 			bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
-			Debug.Log("moved 1 " + moved);
-			heuristics.Add(minimax(clone, depth - 1, !maxPlayer, alpha, beta));
+			//Debug.Log("moved 1 " + moved);
+			evalFunction.Add(alphabeta(clone, depth - 1, !maxPlayer, alpha, beta));
 			Destroy(clone.gameObject);
 
 			stopwatchin.Stop();
-			Debug.Log("Time taken for individual loop:  " + (stopwatchin.Elapsed));
+			//Debug.Log("Time taken for individual loop:  " + (stopwatchin.Elapsed));
 			stopwatchin.Reset();
 		}
 		stopwatch.Stop();
-		Debug.Log("Time taken for minimax loop:  " + (stopwatch.Elapsed));
+		//Debug.Log("Time taken for minimax loop:  " + (stopwatch.Elapsed));
 		stopwatch.Reset();
 
-		double maxHeuristics = double.NegativeInfinity;
-		for (int i = heuristics.Count - 1; i >= 0; i--)
+		double maxEvalFunction = double.NegativeInfinity;
+		for (int i = evalFunction.Count - 1; i >= 0; i--)
 		{
-			if (heuristics[i] >= maxHeuristics)
+			if (evalFunction[i] >= maxEvalFunction)
 			{
-				maxHeuristics = heuristics[i];
+				maxEvalFunction = evalFunction[i];
 			}
 		}
-		for (int i = 0; i < heuristics.Count; i++)
+		for (int i = 0; i < evalFunction.Count; i++)
 		{
-			if (heuristics[i] < maxHeuristics)
+			if (evalFunction[i] < maxEvalFunction)
 			{
-				heuristics.Remove(heuristics[i]);
+				evalFunction.Remove(evalFunction[i]);
 				possibleMoves.Remove(possibleMoves[i]);
 				i--;
 			}
 		}
-		Debug.Log("Loop count: " + loopCount);
+		Debug.Log("Loop count 1: " + loopCount + " Loop count 2: " + loopCount1 + " Loop count 3: " + loopCount2);
 		return possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
 	}
 
-	private static double minimax(Board board, int depth, bool maxPlayer, double alpha, double beta)
+	private static double alphabeta(Board board, int depth, bool maxPlayer, double alpha, double beta)
 	{
 		if (depth == 0)
 		{
-			int h = getSimpleHeuristic(board, Piece.Type.black);
+			int h = getSimpleEval(board, Piece.Type.black);
 			if (h == 0)
 			{
 				Destroy(board.gameObject);
 			}
+			Debug.Log("NOTdefaultvalue");
 			return h;
 		}
 		Piece.Type type;
@@ -89,27 +89,28 @@ public class MinimaxSearch : MonoBehaviour
 
 		List<Move> possibleMoves = board.getAllValidMoves(type);
 
-		double initial = 0;
+		double value;
 		Board clone = null;
 		if (maxPlayer)
 		{
-			initial = double.NegativeInfinity;
+			value = double.NegativeInfinity;
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
-				loopCount++;
+				loopCount1++;
 				clone = board.setCloneBoard();
 				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
-				Debug.Log("moved 2 " + moved);
+				//Debug.Log("moved 2 " + moved);
 
-				double result = minimax(clone, depth - 1, !(maxPlayer), alpha, beta);
+				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 
-				initial = System.Math.Max(result, initial);
-				alpha = System.Math.Max(alpha, initial);
+				value = System.Math.Max(eval, value);
+				alpha = System.Math.Max(alpha, value);
 				Destroy(clone.gameObject);
 
-				if (alpha >= beta)
+				if (beta <= alpha)
 				{
+					Debug.Log("breakhit");
 					break;
 				}
 			}
@@ -117,32 +118,34 @@ public class MinimaxSearch : MonoBehaviour
 		//minimizing
 		else
 		{
-			initial = double.PositiveInfinity;
+			value = double.PositiveInfinity;
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
-				loopCount++;
+				loopCount2++;
 				clone = board.setCloneBoard();
 				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
-				Debug.Log("moved 3 " + moved);
+				//Debug.Log("moved 3 " + moved);
 
-				double result = minimax(clone, depth - 1, !(maxPlayer), alpha, beta);
+				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 
-				initial = System.Math.Min(result, initial);
-				alpha = System.Math.Min(alpha, initial);
+				value = System.Math.Min(eval, value);
+				alpha = System.Math.Min(alpha, value);
 
 				Destroy(clone.gameObject);
-				if (alpha >= beta)
+				if (beta <= alpha)
 				{
+					Debug.Log("breakhit2");
 					break;
 				}
 			}
 		}
-		return initial;
+		Debug.Log("defaultvalue");
+		return value;
 	}
 
 	//Return number of pieces left for a player
-	private static int getSimpleHeuristic(Board board, Piece.Type type)
+	private static int getSimpleEval(Board board, Piece.Type type)
 	{
 		int numPieceForPlayer = 0;
 		int numPieceForOpp = 0;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,7 @@ public class MainGame : MonoBehaviour
 	public bool gameOver = false;
 	//Reference to main board
 	public Board mainBoard;
+	bool routineStarted = false;
 
 	//Initialise the game state
 	public void init(Board.GameType type)
@@ -17,11 +19,11 @@ public class MainGame : MonoBehaviour
 	}
 
 	//AI functions here
-	void Update()
+	void FixedUpdate()
 	{
-		if (Input.GetKeyUp(KeyCode.M))
+		if (routineStarted == false && !gameOver)
 		{
-			startAI();
+			StartCoroutine(startAI());
 		}
 	}
 
@@ -57,17 +59,18 @@ public class MainGame : MonoBehaviour
 			}
 		}
 		mainBoard.makeMove(piece, cell);
+		checkWin();
 	}
 
-	void startAI()
+	IEnumerator startAI()
 	{
+		routineStarted = true;
 		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 		stopwatch.Start();
 		Move m = null;
 		if ((mainBoard.gameType == Board.GameType.tvs && mainBoard.turn == Board.Turn.black)
 			|| (mainBoard.gameType == Board.GameType.hvs && mainBoard.turn == Board.Turn.black))
 		{
-			MinimaxSearch.depth = 3;
 			MinimaxSearch.board = mainBoard;
 			m = MinimaxSearch.minimaxStart();
 		}
@@ -82,6 +85,7 @@ public class MainGame : MonoBehaviour
 		Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
 		stopwatch.Reset();
 		mainBoard.makeMove(m.getPiece(), m.getCell());
+		checkWin();
 		Board[] mg = FindObjectsOfType<Board>();
 		foreach (Board mgg in mg)
 		{
@@ -90,6 +94,8 @@ public class MainGame : MonoBehaviour
 				Destroy(mgg.gameObject);
 			}
 		}
+		yield return new WaitForSeconds(0.3f);
+		routineStarted = false;
 	}
 
 	//Check if pieces are left
