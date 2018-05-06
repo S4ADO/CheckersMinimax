@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MinimaxTactical : MonoBehaviour
 {
-	public static int depth = 2, loopCount = 0;
+	public static int depth = 2;
 	public static Board board;
 
 	//Simple search minimax with AB pruning
@@ -14,8 +14,7 @@ public class MinimaxTactical : MonoBehaviour
 	public static Move minimaxStart()
 	{
 		bool maxPlayer = true;
-		double alpha = double.NegativeInfinity;
-		double beta = double.PositiveInfinity;
+		double alpha = double.NegativeInfinity, beta = double.PositiveInfinity;
 
 		List<Move> possibleMoves = board.getAllValidMoves(Piece.Type.white);
 		List<double> evalFunction = new List<double>();
@@ -27,27 +26,14 @@ public class MinimaxTactical : MonoBehaviour
 			return m;
 		}
 		Board clone = null;
-		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-		stopwatch.Start();
 		for (int i = 0; i < possibleMoves.Count; i++)
 		{
-			System.Diagnostics.Stopwatch stopwatchin = new System.Diagnostics.Stopwatch();
-			stopwatchin.Start();
-
-			loopCount++;
 			clone = board.setCloneBoard();
 			clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
 			evalFunction.Add(alphabeta(clone, depth - 1, !maxPlayer, alpha, beta));
 			Destroy(clone.gameObject);
-
-			stopwatchin.Stop();
-			//Debug.Log("Time taken for individual loop:  " + (stopwatchin.Elapsed));
-			stopwatchin.Reset();
 		}
-		stopwatch.Stop();
-		//Debug.Log("Time taken for minimax loop:  " + (stopwatch.Elapsed));
-		stopwatch.Reset();
 
 		double maxEvalFunction = double.NegativeInfinity;
 		for (int i = evalFunction.Count - 1; i >= 0; i--)
@@ -66,8 +52,7 @@ public class MinimaxTactical : MonoBehaviour
 				i--;
 			}
 		}
-		Debug.Log("Loop count: " + loopCount);
-		return possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
+		return possibleMoves[0];
 	}
 
 	private static double alphabeta(Board board, int depth, bool maxPlayer, double alpha, double beta)
@@ -94,54 +79,47 @@ public class MinimaxTactical : MonoBehaviour
 
 		List<Move> possibleMoves = board.getAllValidMoves(type);
 
-		double value = 0;
+		double result;
 		Board clone = null;
 		if (maxPlayer)
 		{
-			value = double.NegativeInfinity;
+			result = alpha;
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
-				loopCount++;
 				clone = board.setCloneBoard();
 				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
-
 				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 				Destroy(clone.gameObject);
-
-				value = System.Math.Max(eval, value);
-				alpha = System.Math.Max(alpha, value);
-
+				result = System.Math.Max(eval, result);
+				alpha = System.Math.Max(alpha, result);
 				if (alpha >= beta)
 				{
 					break;
 				}
 			}
+			return result;
 		}
 		//minimizing
 		else
 		{
-			value = double.PositiveInfinity;
+			result = beta;
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
-				loopCount++;
 				clone = board.setCloneBoard();
 				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
-
 				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 				Destroy(clone.gameObject);
-
-				value = System.Math.Min(eval, value);
-				alpha = System.Math.Min(alpha, value);
-
+				result = System.Math.Min(eval, result);
+				beta = System.Math.Min(beta, result);
 				if (alpha >= beta)
 				{
 					break;
 				}
 			}
+			return result;
 		}
-		return value;
 	}
 
 	//Return number of pieces left for a player
@@ -191,14 +169,98 @@ public class MinimaxTactical : MonoBehaviour
 			if (p.type == type && p.isActive)
 			{
 				//Nearing end game 
-				if ((numTotal) > (numTotalOpp + 3) && numKings >= 2)
+				if ((numNormal <= 3 && numNormalOpp <= 3 && (numKingsOpp > 0 || numKings > 0)))
 				{
-					evalFunc += p.isKing ? 2 : 1;
+					foreach (Piece opp in boardPieces)
+					{
+						//Find first opponent king piece and reduce distance from them
+						if (opp.type != type)
+						#region eval
+						{
+							int rowDist = Mathf.Abs(opp.cell.row - p.cell.row);
+							int colDist = Mathf.Abs(opp.cell.col - p.cell.col);
+							int totalDist = colDist + rowDist;
+							if (totalDist == 18)
+							{
+								evalFunc += 1;
+							}
+							else if (totalDist == 17)
+							{
+								evalFunc += 2;
+							}
+							else if (totalDist == 16)
+							{
+								evalFunc += 3;
+							}
+							else if (totalDist == 15)
+							{
+								evalFunc += 4;
+							}
+							else if (totalDist == 14)
+							{
+								evalFunc += 5;
+							}
+							else if (totalDist == 13)
+							{
+								evalFunc += 6;
+							}
+							else if (totalDist == 12)
+							{
+								evalFunc += 7;
+							}
+							else if (totalDist == 11)
+							{
+								evalFunc += 8;
+							}
+							else if (totalDist == 10)
+							{
+								evalFunc += 9;
+							}
+							else if (totalDist == 9)
+							{
+								evalFunc += 10;
+							}
+							else if (totalDist == 8)
+							{
+								evalFunc += 11;
+							}
+							else if (totalDist == 7)
+							{
+								evalFunc += 12;
+							}
+							else if (totalDist == 6)
+							{
+								evalFunc += 13;
+							}
+							else if (totalDist == 5)
+							{
+								evalFunc += 14;
+							}
+							else if (totalDist == 4)
+							{
+								evalFunc += 15;
+							}
+							else if (totalDist == 3)
+							{
+								evalFunc +=16;
+							}
+							else if (totalDist == 2)
+							{
+								evalFunc += 17;
+							}
+							else if (totalDist == 1)
+							{
+								evalFunc += 18;
+							}
+							break;
+						}
+						#endregion
+					}
 				}
 				//Normal evaluation
 				else
 				{
-					evalFunc += p.isKing ? 2 : 1;
+					evalFunc += p.isKing ? 5 : 4;
 					//The closer to being king the higher the evaluation
 					if (!p.isKing)
 					{
@@ -223,13 +285,97 @@ public class MinimaxTactical : MonoBehaviour
 			else if (p.type != type && p.isActive)
 			{
 				//Nearing end game 
-				if ((numTotalOpp) > (numTotal + 3) && numKingsOpp >= 2)
+				if ((numNormal <= 3 && numNormalOpp <= 3 && (numKingsOpp > 0 || numKings > 0)))
 				{
-					evalFuncOpp += p.isKing ? 2 : 1;
+					foreach (Piece opp in boardPieces)
+					{
+						//Find first opponent king piece and reduce distance from them
+						if (opp.type == type)
+						{
+							#region eval opp
+							int rowDist = Mathf.Abs(opp.cell.row - p.cell.row);
+							int colDist = Mathf.Abs(opp.cell.col - p.cell.col);
+							int totalDist = colDist + rowDist;
+							if (totalDist == 18)
+							{
+								evalFuncOpp += 1;
+							}
+							else if (totalDist == 17)
+							{
+								evalFuncOpp += 2;
+							}
+							else if (totalDist == 16)
+							{
+								evalFuncOpp += 3;
+							}
+							else if (totalDist == 15)
+							{
+								evalFuncOpp += 4;
+							}
+							else if (totalDist == 14)
+							{
+								evalFuncOpp += 5;
+							}
+							else if (totalDist == 13)
+							{
+								evalFuncOpp += 6;
+							}
+							else if (totalDist == 12)
+							{
+								evalFuncOpp += 7;
+							}
+							else if (totalDist == 11)
+							{
+								evalFuncOpp += 8;
+							}
+							else if (totalDist == 10)
+							{
+								evalFuncOpp += 9;
+							}
+							else if (totalDist == 9)
+							{
+								evalFuncOpp += 10;
+							}
+							else if (totalDist == 8)
+							{
+								evalFuncOpp += 11;
+							}
+							else if (totalDist == 7)
+							{
+								evalFuncOpp += 12;
+							}
+							else if (totalDist == 6)
+							{
+								evalFuncOpp += 13;
+							}
+							else if (totalDist == 5)
+							{
+								evalFuncOpp += 14;
+							}
+							else if (totalDist == 4)
+							{
+								evalFuncOpp += 15;
+							}
+							else if (totalDist == 3)
+							{
+								evalFuncOpp += 16;
+							}
+							else if (totalDist == 2)
+							{
+								evalFuncOpp += 17;
+							}
+							else if (totalDist == 1)
+							{
+								evalFuncOpp += 18;
+							}
+							break;
+							#endregion
+						}
+					}
 				}
 				else
 				{
-					evalFuncOpp += p.isKing ? 2 : 1;
+					evalFuncOpp += p.isKing ? 5 : 4;
 					//The closer to being king the higher the evaluation (black piece moves downwards)
 					if (!p.isKing)
 					{

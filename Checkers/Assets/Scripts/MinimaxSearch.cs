@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MinimaxSearch : MonoBehaviour
 {
-	public static int depth = 2, loopCount = 0, loopCount1 = 0, loopCount2 = 0;
+	public static int depth = 2;
 	public static Board board;
 
 	//Simple search minimax with AB pruning
@@ -20,28 +20,14 @@ public class MinimaxSearch : MonoBehaviour
 		List<double> evalFunction = new List<double>();
 
 		Board clone = null;
-		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-		stopwatch.Start();
 		for (int i = 0; i < possibleMoves.Count; i++)
 		{
-			System.Diagnostics.Stopwatch stopwatchin = new System.Diagnostics.Stopwatch();
-			stopwatchin.Start();
-
-			loopCount++;
 			clone = board.setCloneBoard();
 			bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
-			//Debug.Log("moved 1 " + moved);
 			evalFunction.Add(alphabeta(clone, depth - 1, !maxPlayer, alpha, beta));
 			Destroy(clone.gameObject);
-
-			stopwatchin.Stop();
-			//Debug.Log("Time taken for individual loop:  " + (stopwatchin.Elapsed));
-			stopwatchin.Reset();
 		}
-		stopwatch.Stop();
-		//Debug.Log("Time taken for minimax loop:  " + (stopwatch.Elapsed));
-		stopwatch.Reset();
 
 		double maxEvalFunction = double.NegativeInfinity;
 		for (int i = evalFunction.Count - 1; i >= 0; i--)
@@ -51,6 +37,7 @@ public class MinimaxSearch : MonoBehaviour
 				maxEvalFunction = evalFunction[i];
 			}
 		}
+
 		for (int i = 0; i < evalFunction.Count; i++)
 		{
 			if (evalFunction[i] < maxEvalFunction)
@@ -60,7 +47,7 @@ public class MinimaxSearch : MonoBehaviour
 				i--;
 			}
 		}
-		Debug.Log("Loop count 1: " + loopCount + " Loop count 2: " + loopCount1 + " Loop count 3: " + loopCount2);
+		//Debug.Log("Loop count 1: " + loopCount + " Loop count 2: " + loopCount1 + " Loop count 3: " + loopCount2);
 		return possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
 	}
 
@@ -73,7 +60,6 @@ public class MinimaxSearch : MonoBehaviour
 			{
 				Destroy(board.gameObject);
 			}
-			Debug.Log("NOTdefaultvalue");
 			return h;
 		}
 		Piece.Type type;
@@ -89,59 +75,50 @@ public class MinimaxSearch : MonoBehaviour
 
 		List<Move> possibleMoves = board.getAllValidMoves(type);
 
-		double value;
+		double result;
 		Board clone = null;
 		if (maxPlayer)
 		{
-			value = double.NegativeInfinity;
+			result = alpha;
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
-				loopCount1++;
 				clone = board.setCloneBoard();
 				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
 				//Debug.Log("moved 2 " + moved);
-
 				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
-
-				value = System.Math.Max(eval, value);
-				alpha = System.Math.Max(alpha, value);
 				Destroy(clone.gameObject);
-
-				if (beta <= alpha)
+				result = System.Math.Max(eval, result);
+				alpha = System.Math.Max(alpha, result);
+				if (alpha >= beta)
 				{
 					Debug.Log("breakhit");
 					break;
 				}
 			}
+			return result;
 		}
 		//minimizing
 		else
 		{
-			value = double.PositiveInfinity;
+			result = beta;
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
-				loopCount2++;
 				clone = board.setCloneBoard();
 				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
 				clone.findEquivilantCell(possibleMoves[i].getCell()));
-				//Debug.Log("moved 3 " + moved);
-
 				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
-
-				value = System.Math.Min(eval, value);
-				alpha = System.Math.Min(alpha, value);
-
 				Destroy(clone.gameObject);
-				if (beta <= alpha)
+				result = System.Math.Min(eval, result);
+				beta = System.Math.Min(beta, result);
+				if (alpha >= beta)
 				{
 					Debug.Log("breakhit2");
 					break;
 				}
 			}
+			return result;
 		}
-		Debug.Log("defaultvalue");
-		return value;
 	}
 
 	//Return number of pieces left for a player

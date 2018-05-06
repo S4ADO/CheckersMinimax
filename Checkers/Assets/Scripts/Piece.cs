@@ -18,6 +18,7 @@ public class Piece : MonoBehaviour
 		transform.position = cell.transform.position + new Vector3(0.001f, 0.001f, 0);
 	}
 
+	//Move to new cell
 	public void movePiece(Cell newCell)
 	{
 		cell.piece = null;
@@ -42,6 +43,7 @@ public class Piece : MonoBehaviour
 		}
 	}
 
+	//Remove piece from board
 	public void remove()
 	{
 		transform.position = new Vector3(20, 20, 0);
