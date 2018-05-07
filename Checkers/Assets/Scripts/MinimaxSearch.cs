@@ -20,6 +20,7 @@ public class MinimaxSearch : MonoBehaviour
 		List<Move> possibleMoves = board.getAllValidMoves(Piece.Type.black);
 		List<double> evalFunction = new List<double>();
 
+		//Clone the board at each stage of the loop and make the initiatl possible move
 		Board clone = null;
 		for (int i = 0; i < possibleMoves.Count; i++)
 		{
@@ -38,6 +39,7 @@ public class MinimaxSearch : MonoBehaviour
 			Destroy(clone.gameObject);
 		}
 
+		//Get the maximum evaluation
 		double maxEvalFunction = double.NegativeInfinity;
 		for (int i = evalFunction.Count - 1; i >= 0; i--)
 		{
@@ -46,7 +48,7 @@ public class MinimaxSearch : MonoBehaviour
 				maxEvalFunction = evalFunction[i];
 			}
 		}
-
+		//Remove all evaluations that are less than the maximum
 		for (int i = 0; i < evalFunction.Count; i++)
 		{
 			if (evalFunction[i] < maxEvalFunction)
@@ -56,7 +58,7 @@ public class MinimaxSearch : MonoBehaviour
 				i--;
 			}
 		}
-		//Debug.Log("Loop count 1: " + loopCount + " Loop count 2: " + loopCount1 + " Loop count 3: " + loopCount2);
+		//Return a random move with the max evaluation
 		return possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
 	}
 
@@ -87,6 +89,7 @@ public class MinimaxSearch : MonoBehaviour
 
 		double result;
 		Board clone = null;
+		//Recursively find the child depth and all resultant depths and return its evaluation with AB pruning
 		if (maxPlayer)
 		{
 			result = alpha;

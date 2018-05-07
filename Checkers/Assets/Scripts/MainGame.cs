@@ -82,7 +82,7 @@ public class MainGame : MonoBehaviour
 			mainBoard.makeMove(m.getPiece(), m.getCell(), m.getJumped());
 			checkWin();
 			stopwatch.Stop();
-			Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
+			Debug.Log("Time taken for search:  " + (stopwatch.Elapsed.Milliseconds));
 			stopwatch.Reset();
 		}
 		else if ((mainBoard.gameType == Board.GameType.tvs && mainBoard.turn == Board.Turn.white)
@@ -93,7 +93,7 @@ public class MainGame : MonoBehaviour
 			mainBoard.makeMove(m.getPiece(), m.getCell(), m.getJumped());
 			checkWin();
 			stopwatch.Stop();
-			Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
+			Debug.Log("Time taken for tactical:  " + (stopwatch.Elapsed.Milliseconds));
 			stopwatch.Reset();
 		}
 

@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class MinimaxTactical : MonoBehaviour
 {
-	public static int depth = 2;
+	public static int depth = 3;
 	public static Board board;
 
 	//Simple minimax with AB pruning
@@ -19,13 +19,14 @@ public class MinimaxTactical : MonoBehaviour
 
 		List<Move> possibleMoves = board.getAllValidMoves(Piece.Type.white);
 		List<double> evalFunction = new List<double>();
-
+		//Save time by making first move always this one
 		if (board.firstMove)
 		{
 			Move m = new Move(GameObject.Find("white (11)").GetComponent<Piece>(),
 				GameObject.Find("cell (27)").GetComponent<Cell>());
 			return m;
 		}
+		//Clone the board at each stage of the loop and make the initiatl possible move
 		Board clone = null;
 		for (int i = 0; i < possibleMoves.Count; i++)
 		{
@@ -43,7 +44,7 @@ public class MinimaxTactical : MonoBehaviour
 			evalFunction.Add(alphabeta(clone, depth - 1, !maxPlayer, alpha, beta));
 			Destroy(clone.gameObject);
 		}
-
+		//Get the maximum evaluation
 		double maxEvalFunction = double.NegativeInfinity;
 		for (int i = evalFunction.Count - 1; i >= 0; i--)
 		{
@@ -52,6 +53,7 @@ public class MinimaxTactical : MonoBehaviour
 				maxEvalFunction = evalFunction[i];
 			}
 		}
+		//Remove all evaluations that are less than the maximum
 		for (int i = 0; i < evalFunction.Count; i++)
 		{
 			if (evalFunction[i] < maxEvalFunction)
@@ -61,6 +63,7 @@ public class MinimaxTactical : MonoBehaviour
 				i--;
 			}
 		}
+		//Return a move with the max evaluation
 		return possibleMoves[0];
 	}
 
@@ -91,6 +94,7 @@ public class MinimaxTactical : MonoBehaviour
 
 		double result;
 		Board clone = null;
+		//Recursively find the child depth and all resultant depths and return its evaluation with AB pruning
 		if (maxPlayer)
 		{
 			result = alpha;

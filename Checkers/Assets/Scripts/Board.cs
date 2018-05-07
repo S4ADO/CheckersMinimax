@@ -352,6 +352,7 @@ public class Board : MonoBehaviour
 		bool ate = false;
 		bool moved = false;
 
+		//If AI is making the move, prevent double check of validity
 		if (!isAI)
 		{
 			List<Move> validMoves = null;
@@ -414,6 +415,7 @@ public class Board : MonoBehaviour
 		//Is AI
 		else
 		{
+			movesMade = movesMade + selectedPiece.name + selectedCell.name + ";";
 			selectedPiece.movePiece(selectedCell);
 			//Check if king has been made
 			if ((selectedCell.col == 8 && selectedPiece.type == Piece.Type.white) ||
@@ -426,7 +428,6 @@ public class Board : MonoBehaviour
 			//Remove jumped over piece
 			if (jumped != null)
 			{
-				Debug.Log("hit");
 				jumped.remove();
 				ate = true;
 			}
