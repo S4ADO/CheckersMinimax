@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿/**
+ * This class sets the game type (human vs AI, AI vs AI etc...)
+ * Author: Saad Musejee
+ * */
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -30,6 +34,7 @@ public class StartGameUI: MonoBehaviour
 		setGame(Board.GameType.tvs);
 	}
 
+	//Start game
 	void setGame(Board.GameType type)
 	{
 		game.gameObject.SetActive(true);

@@ -1,13 +1,18 @@
-﻿using System.Collections.Generic;
+﻿/**
+ * This class describes the properties of the main board and
+ * all clones that result from the main board
+ * Author: Saad Musejee
+ * */
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Board : MonoBehaviour
 {
+	//For clones keep log off board heuristic
 	public int thisHeurusic = 0;
-
+	//Keep log off moves made
 	public string movesMade = "";
-
 	//Type of game (human vs AI / AI vs AI)
 	public enum GameType { hvs, hvt, tvs }
 	public GameType gameType;
@@ -292,6 +297,7 @@ public class Board : MonoBehaviour
 		return validMoves;
 	}
 
+	//Get reference to equivilant piece on the clone board
 	public Piece findEquivilantPiece(Piece piece)
 	{
 		Piece toRet = null;
@@ -312,6 +318,7 @@ public class Board : MonoBehaviour
 		return toRet;
 	}
 
+	//Get reference to equivilant cell on the clone board
 	public Cell findEquivilantCell(Cell cell)
 	{
 		Cell toRet = null;

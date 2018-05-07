@@ -1,4 +1,10 @@
-﻿public class Move
+﻿/**
+ * This class describes the move made at each turn. It contains
+ * a reference to the moving piece, where it is moving to and
+ * if the move means any of the opponent's pieces have been jumped over
+ * Author: Saad Musejee
+ * */
+public class Move
 {
 	private Piece piece;
 	private Cell cell;

@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿/**
+ * This class implements the minimax algorithm with alpha-beta pruning
+ * it uses a simple version of the heursitic evaluation function
+ * Author: Saad Musejee
+ * */
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MinimaxSearch : MonoBehaviour
@@ -6,10 +11,7 @@ public class MinimaxSearch : MonoBehaviour
 	public static int depth = 3;
 	public static Board board;
 
-	//Simple search minimax with AB pruning
-	/**
-	 * TODO: personalise code
-	 * */
+	//Simple minimax with AB pruning
 	public static Move minimaxStart()
 	{
 		bool maxPlayer = true;
@@ -58,6 +60,7 @@ public class MinimaxSearch : MonoBehaviour
 		return possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
 	}
 
+	//Recursive algorithm to search child board states for the specified depth
 	private static double alphabeta(Board board, int depth, bool maxPlayer, double alpha, double beta)
 	{
 		if (depth == 0)
@@ -144,7 +147,7 @@ public class MinimaxSearch : MonoBehaviour
 		}
 	}
 
-	//Return number of pieces left for a player
+	//Retursn number of pieces left for a player
 	private static int getSimpleEval(Board board, Piece.Type type)
 	{
 		int numPieceForPlayer = 0;

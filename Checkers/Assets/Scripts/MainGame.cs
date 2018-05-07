@@ -1,4 +1,8 @@
-﻿using System.Collections;
+﻿/**
+ * This class initialises the gmae state 
+ * Author: Saad Musejee
+ * */
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,6 +31,7 @@ public class MainGame : MonoBehaviour
 		}
 	}
 
+	//Another way of moving
 	public void getHumanMove()
 	{
 		InputField IF = GameObject.Find("InputMove").GetComponent<InputField>();
@@ -62,6 +67,7 @@ public class MainGame : MonoBehaviour
 		checkWin();
 	}
 
+	//Ran on loop to check if AI is ready to move
 	IEnumerator startAI()
 	{
 		routineStarted = true;
@@ -145,6 +151,7 @@ public class MainGame : MonoBehaviour
 		}
 	}
 
+	//Log results
 	void GameOver()
 	{
 		gameOver = true;

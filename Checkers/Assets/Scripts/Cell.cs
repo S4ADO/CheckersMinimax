@@ -1,4 +1,9 @@
-﻿using UnityEngine;
+﻿/**
+ * This class describes the properties of each cell on a given board
+ * where each board is made up for 32 cells
+ * Author: Saad Musejee
+ * */
+using UnityEngine;
 
 public class Cell : MonoBehaviour
 {

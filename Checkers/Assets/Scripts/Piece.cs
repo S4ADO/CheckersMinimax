@@ -1,8 +1,13 @@
-﻿using UnityEngine;
+﻿/**
+ * This class describes the properties of each piece on a given board
+ * where each board starts with 24 pieces
+ * Author: Saad Musejee
+ * */
+using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-	//Declate piece properties
+	//Declare piece properties
 	public enum Type { black, white }
 	public Type type;
 	public Cell cell;
@@ -27,6 +32,7 @@ public class Piece : MonoBehaviour
 		transform.position = cell.transform.position + new Vector3(0.001f, 0.001f, 0);
 	}
 
+	//For humans moving
 	void FixedUpdate()
 	{
 		if (Input.GetMouseButtonDown(0))
