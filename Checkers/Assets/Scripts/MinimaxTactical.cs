@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class MinimaxTactical : MonoBehaviour
@@ -29,8 +28,16 @@ public class MinimaxTactical : MonoBehaviour
 		for (int i = 0; i < possibleMoves.Count; i++)
 		{
 			clone = board.setCloneBoard();
-			clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
-				clone.findEquivilantCell(possibleMoves[i].getCell()));
+			if (possibleMoves[i].getJumped() != null)
+			{
+				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+					clone.findEquivilantCell(possibleMoves[i].getCell()), clone.findEquivilantPiece(possibleMoves[i].getJumped()));
+			}
+			else
+			{
+				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+					clone.findEquivilantCell(possibleMoves[i].getCell()));
+			}
 			evalFunction.Add(alphabeta(clone, depth - 1, !maxPlayer, alpha, beta));
 			Destroy(clone.gameObject);
 		}
@@ -87,8 +94,16 @@ public class MinimaxTactical : MonoBehaviour
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
 				clone = board.setCloneBoard();
-				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
-				clone.findEquivilantCell(possibleMoves[i].getCell()));
+				if (possibleMoves[i].getJumped() != null)
+				{
+					clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+						clone.findEquivilantCell(possibleMoves[i].getCell()), clone.findEquivilantPiece(possibleMoves[i].getJumped()));
+				}
+				else
+				{
+					clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+						clone.findEquivilantCell(possibleMoves[i].getCell()));
+				}
 				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 				Destroy(clone.gameObject);
 				result = System.Math.Max(eval, result);
@@ -107,8 +122,16 @@ public class MinimaxTactical : MonoBehaviour
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
 				clone = board.setCloneBoard();
-				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
-				clone.findEquivilantCell(possibleMoves[i].getCell()));
+				if (possibleMoves[i].getJumped() != null)
+				{
+					clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+						clone.findEquivilantCell(possibleMoves[i].getCell()), clone.findEquivilantPiece(possibleMoves[i].getJumped()));
+				}
+				else
+				{
+					clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+						clone.findEquivilantCell(possibleMoves[i].getCell()));
+				}
 				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 				Destroy(clone.gameObject);
 				result = System.Math.Min(eval, result);
@@ -169,7 +192,7 @@ public class MinimaxTactical : MonoBehaviour
 			if (p.type == type && p.isActive)
 			{
 				//Nearing end game 
-				if ((numNormal <= 3 && numNormalOpp <= 3 && (numKingsOpp > 0 || numKings > 0)))
+				if ((numNormal == 0 && numNormalOpp == 0))
 				{
 					foreach (Piece opp in boardPieces)
 					{
@@ -285,7 +308,7 @@ public class MinimaxTactical : MonoBehaviour
 			else if (p.type != type && p.isActive)
 			{
 				//Nearing end game 
-				if ((numNormal <= 3 && numNormalOpp <= 3 && (numKingsOpp > 0 || numKings > 0)))
+				if ((numNormal == 0 && numNormalOpp == 0))
 				{
 					foreach (Piece opp in boardPieces)
 					{

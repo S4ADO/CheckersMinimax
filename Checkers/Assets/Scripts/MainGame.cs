@@ -73,19 +73,24 @@ public class MainGame : MonoBehaviour
 		{
 			MinimaxSearch.board = mainBoard;
 			m = MinimaxSearch.minimaxStart();
+			mainBoard.makeMove(m.getPiece(), m.getCell(), m.getJumped());
+			checkWin();
+			stopwatch.Stop();
+			Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
+			stopwatch.Reset();
 		}
 		else if ((mainBoard.gameType == Board.GameType.tvs && mainBoard.turn == Board.Turn.white)
 			|| (mainBoard.gameType == Board.GameType.hvt && mainBoard.turn == Board.Turn.white))
 		{
 			MinimaxTactical.board = mainBoard;
 			m = MinimaxTactical.minimaxStart();
+			mainBoard.makeMove(m.getPiece(), m.getCell(), m.getJumped());
+			checkWin();
+			stopwatch.Stop();
+			Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
+			stopwatch.Reset();
 		}
 
-		stopwatch.Stop();
-		Debug.Log("Time taken overall:  " + (stopwatch.Elapsed));
-		stopwatch.Reset();
-		mainBoard.makeMove(m.getPiece(), m.getCell());
-		checkWin();
 		Board[] mg = FindObjectsOfType<Board>();
 		foreach (Board mgg in mg)
 		{

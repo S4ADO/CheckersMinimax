@@ -331,11 +331,13 @@ public class Board : MonoBehaviour
 	}
 
 	//Make the move
-	public bool makeMove(Piece sPiece = null, Cell sCell = null)
+	public bool makeMove(Piece sPiece = null, Cell sCell = null, Piece jumped = null)
 	{
+		bool isAI = false;
 		//For AI
 		if (sPiece != null && sCell != null)
 		{
+			isAI = true;
 			selectedCell = sCell;
 			selectedPiece = sPiece;
 		}
@@ -343,44 +345,10 @@ public class Board : MonoBehaviour
 		bool ate = false;
 		bool moved = false;
 
-		List<Move> validMoves = null;
-		validMoves = new List<Move>();
-		if (turn == Turn.black)
+		if (!isAI)
 		{
-			validMoves = getAllValidMoves(Piece.Type.black);
-		}
-		else if (turn == Turn.white)
-		{
-			validMoves = getAllValidMoves(Piece.Type.white);
-		}
-
-		Piece curPiece = selectedPiece;
-		foreach (Move move in validMoves)
-		{
-			if (move.getCell() == (selectedCell) && move.getPiece() == (selectedPiece))
-			{
-				movesMade = movesMade + selectedPiece.name + selectedCell.name + ";";
-				selectedPiece.movePiece(selectedCell);
-
-				//Check if king has been made
-				if ((selectedCell.col == 8 && selectedPiece.type == Piece.Type.white) ||
-					(selectedCell.col == 1 && selectedPiece.type == Piece.Type.black))
-				{
-					selectedPiece.makeKing();
-				}
-				moved = true;
-				firstMove = false;
-				//Remove jumped over piece
-				if (move.getJumped() != null)
-				{
-					move.getJumped().remove();
-					ate = true;
-				}
-			}
-		}
-
-		if (ate)
-		{
+			List<Move> validMoves = null;
+			validMoves = new List<Move>();
 			if (turn == Turn.black)
 			{
 				validMoves = getAllValidMoves(Piece.Type.black);
@@ -389,13 +357,92 @@ public class Board : MonoBehaviour
 			{
 				validMoves = getAllValidMoves(Piece.Type.white);
 			}
-			Move newMove = new Move(curPiece, null);
+
+			Piece curPiece = selectedPiece;
 			foreach (Move move in validMoves)
 			{
-				if (newMove.getPiece() == move.getPiece() && move.getJumped() != null)
+				if (move.getCell() == (selectedCell) && move.getPiece() == (selectedPiece))
 				{
-					selectedCell = null;
-					return true;
+					movesMade = movesMade + selectedPiece.name + selectedCell.name + ";";
+					selectedPiece.movePiece(selectedCell);
+
+					//Check if king has been made
+					if ((selectedCell.col == 8 && selectedPiece.type == Piece.Type.white) ||
+						(selectedCell.col == 1 && selectedPiece.type == Piece.Type.black))
+					{
+						selectedPiece.makeKing();
+					}
+					moved = true;
+					firstMove = false;
+					//Remove jumped over piece
+					if (move.getJumped() != null)
+					{
+						move.getJumped().remove();
+						ate = true;
+					}
+				}
+			}
+
+			if (ate)
+			{
+				if (turn == Turn.black)
+				{
+					validMoves = getAllValidMoves(Piece.Type.black);
+				}
+				else if (turn == Turn.white)
+				{
+					validMoves = getAllValidMoves(Piece.Type.white);
+				}
+				Move newMove = new Move(curPiece, null);
+				foreach (Move move in validMoves)
+				{
+					if (newMove.getPiece() == move.getPiece() && move.getJumped() != null)
+					{
+						selectedCell = null;
+						return true;
+					}
+				}
+			}
+		}
+		//Is AI
+		else
+		{
+			selectedPiece.movePiece(selectedCell);
+			//Check if king has been made
+			if ((selectedCell.col == 8 && selectedPiece.type == Piece.Type.white) ||
+				(selectedCell.col == 1 && selectedPiece.type == Piece.Type.black))
+			{
+				selectedPiece.makeKing();
+			}
+			moved = true;
+			firstMove = false;
+			//Remove jumped over piece
+			if (jumped != null)
+			{
+				Debug.Log("hit");
+				jumped.remove();
+				ate = true;
+			}
+
+			if (ate)
+			{
+				List<Move> validMoves = null;
+				if (turn == Turn.black)
+				{
+					validMoves = getAllValidMoves(Piece.Type.black);
+				}
+				else if (turn == Turn.white)
+				{
+					validMoves = getAllValidMoves(Piece.Type.white);
+				}
+				Move newMove = new Move(selectedPiece, null);
+				foreach (Move move in validMoves)
+				{
+					if (newMove.getPiece() == move.getPiece() && move.getJumped() != null)
+					{
+						selectedCell = null;
+						return true;
+					}
 				}
 			}
 		}

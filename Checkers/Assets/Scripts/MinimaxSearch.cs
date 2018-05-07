@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class MinimaxSearch : MonoBehaviour
 {
-	public static int depth = 2;
+	public static int depth = 3;
 	public static Board board;
 
 	//Simple search minimax with AB pruning
@@ -23,8 +22,16 @@ public class MinimaxSearch : MonoBehaviour
 		for (int i = 0; i < possibleMoves.Count; i++)
 		{
 			clone = board.setCloneBoard();
-			bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
-				clone.findEquivilantCell(possibleMoves[i].getCell()));
+			if (possibleMoves[i].getJumped() != null)
+			{
+				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+					clone.findEquivilantCell(possibleMoves[i].getCell()), clone.findEquivilantPiece(possibleMoves[i].getJumped()));
+			}
+			else
+			{
+				clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+					clone.findEquivilantCell(possibleMoves[i].getCell()));
+			}
 			evalFunction.Add(alphabeta(clone, depth - 1, !maxPlayer, alpha, beta));
 			Destroy(clone.gameObject);
 		}
@@ -83,8 +90,16 @@ public class MinimaxSearch : MonoBehaviour
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
 				clone = board.setCloneBoard();
-				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
-				clone.findEquivilantCell(possibleMoves[i].getCell()));
+				if (possibleMoves[i].getJumped() != null)
+				{
+					clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+						clone.findEquivilantCell(possibleMoves[i].getCell()), clone.findEquivilantPiece(possibleMoves[i].getJumped()));
+				}
+				else
+				{
+					clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+						clone.findEquivilantCell(possibleMoves[i].getCell()));
+				}
 				//Debug.Log("moved 2 " + moved);
 				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 				Destroy(clone.gameObject);
@@ -105,8 +120,16 @@ public class MinimaxSearch : MonoBehaviour
 			for (int i = 0; i < possibleMoves.Count; i++)
 			{
 				clone = board.setCloneBoard();
-				bool moved = clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
-				clone.findEquivilantCell(possibleMoves[i].getCell()));
+				if (possibleMoves[i].getJumped() != null)
+				{
+					clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+						clone.findEquivilantCell(possibleMoves[i].getCell()), clone.findEquivilantPiece(possibleMoves[i].getJumped()));
+				}
+				else
+				{
+					clone.makeMove(clone.findEquivilantPiece(possibleMoves[i].getPiece()),
+						clone.findEquivilantCell(possibleMoves[i].getCell()));
+				};
 				double eval = alphabeta(clone, depth - 1, !(maxPlayer), alpha, beta);
 				Destroy(clone.gameObject);
 				result = System.Math.Min(eval, result);
